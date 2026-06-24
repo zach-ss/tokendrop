@@ -16,8 +16,16 @@
   --font-mono: 'JetBrains Mono', monospace;
 }
 
-html, body, #root {
+html, body {
   height: 100%;
+  width: 100%;
+  scrollbar-gutter: stable;
+}
+
+#root {
+  height: 100%;
+  width: 100%;
+  overflow-x: hidden;
 }
 
 body {
@@ -30,12 +38,15 @@ body {
 /* ── DROPZONE VIEW ── */
 
 .dropzone-view {
-  min-height: 100vh;
+  min-height: 55vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
+  padding: 4rem 2rem 2rem;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .app-title {
@@ -54,8 +65,9 @@ body {
   opacity: 0.45;
   text-align: center;
   max-width: 400px;
-  line-height: 1.55;
-  margin-bottom: 2rem;
+  line-height: 1.7;
+  letter-spacing: 0.01em;
+  margin-bottom: 3rem;
 }
 
 .dropzone {
@@ -72,6 +84,8 @@ body {
   transition: border-color 0.2s ease, background 0.2s ease;
   background: transparent;
   outline: none;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .dropzone:hover,
@@ -188,7 +202,8 @@ body {
   color: var(--text);
   opacity: 0.4;
   text-align: center;
-  margin-top: 1.75rem;
+  margin-top: 12px;
+  margin-bottom: 0;
 }
 
 /* ── EDITOR VIEW ── */
@@ -356,5 +371,114 @@ body {
   .left-panel, .right-panel, .dropzone, .error-message, .spinner {
     animation: none;
     transition: none;
+  }
+}
+
+/* Educational section */
+.edu-section {
+  max-width: 860px;
+  margin: 40px auto 64px auto;
+  padding: 0 24px;
+}
+
+.edu-intro {
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem;
+  line-height: 1.85;
+  color: #666;
+  max-width: 600px;
+  margin: 0 auto 56px auto;
+  text-align: left;
+}
+
+/* Stat cards — borderless, divided layout */
+.stat-cards {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0;
+}
+
+.stat-card {
+  flex: 1;
+  max-width: 260px;
+  padding: 0 36px;
+  text-align: left;
+}
+
+.stat-card:first-child {
+  padding-left: 0;
+}
+
+.stat-card:last-child {
+  padding-right: 0;
+}
+
+.stat-divider {
+  width: 1px;
+  background-color: var(--border);
+  align-self: stretch;
+  flex-shrink: 0;
+}
+
+.stat-figure {
+  display: block;
+  font-family: 'Inter', sans-serif;
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: #5C7A5C;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  margin-bottom: 14px;
+}
+
+.stat-body {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.85rem;
+  line-height: 1.65;
+  color: #777;
+  margin: 0 0 10px 0;
+}
+
+.stat-why {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.8rem;
+  line-height: 1.6;
+  color: #4a4a4a;
+  margin: 0;
+}
+
+/* Footer */
+.app-footer {
+  text-align: center;
+  padding: 32px 24px 40px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.78rem;
+  color: #bbb;
+  letter-spacing: 0.03em;
+  border-top: 1px solid #ebebea;
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+  .stat-cards {
+    flex-direction: column;
+    gap: 36px;
+  }
+
+  .stat-divider {
+    display: none;
+  }
+
+  .stat-card {
+    max-width: 100%;
+    padding: 0;
+    border-bottom: 1px solid #e0e0da;
+    padding-bottom: 36px;
+  }
+
+  .stat-card:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
   }
 }

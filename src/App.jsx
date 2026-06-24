@@ -259,7 +259,7 @@ export default function App() {
             <span className="file-size">{formatBytes(fileSize)}</span>
           </div>
           <TokenSavings stats={tokenStats} />
-          {scanned && <p className="scanned-warning">This PDF appears to be scanned — text extraction may be incomplete.</p>}
+          {scanned && <p className="scanned-warning">This PDF appears to be scanned. Text extraction may be incomplete.</p>}
           <hr className="divider" />
           <div className="actions">
             <button type="button" className="btn btn-primary" onClick={handleCopy}>
@@ -297,48 +297,77 @@ export default function App() {
   }
 
   return (
-    <div className="dropzone-view">
-      <span className="app-title">tokendrop</span>
-      <p className="app-tagline">AI reads markdown better than Word or PDF. Convert instantly — no accounts, nothing leaves your browser.</p>
-      <div
-        className={`dropzone${dragOver ? ' drag-over' : ''}${loading ? ' loading' : ''}`}
-        onDrop={handleDrop}
-        onDragEnter={handleDragEnter}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onClick={() => !loading && fileInputRef.current.click()}
-        onKeyDown={(e) => !loading && (e.key === 'Enter' || e.key === ' ') && fileInputRef.current.click()}
-        tabIndex={0}
-        role="button"
-        aria-label="Upload a .docx or .pdf file"
-        aria-busy={loading}
-      >
-        {loading ? (
-          <div className="loading-state" aria-live="polite">
-            <div className="spinner" aria-hidden="true" />
-            <p className="dropzone-label">Converting…</p>
-          </div>
-        ) : (
-          <>
-            <svg className="dropzone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M12 16V8m0 0-3 3m3-3 3 3" />
-              <path d="M20 16.5A4.5 4.5 0 0 0 15.5 12H14a6 6 0 1 0-11.8 1.5" />
-            </svg>
-            <p className="dropzone-label">Drop your file here</p>
-            <p className="dropzone-sub">or click to browse</p>
-            <p className="dropzone-hint">.docx and .pdf files supported</p>
-          </>
-        )}
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept={ACCEPTED.join(',')}
-          style={{ display: 'none' }}
-          onChange={handleFileInput}
-        />
+    <>
+      <div className="dropzone-view">
+        <span className="app-title">tokendrop</span>
+        <p className="app-tagline">AI reads markdown better than Word or PDF. Convert instantly. No accounts, nothing leaves your browser.</p>
+        <div
+          className={`dropzone${dragOver ? ' drag-over' : ''}${loading ? ' loading' : ''}`}
+          onDrop={handleDrop}
+          onDragEnter={handleDragEnter}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onClick={() => !loading && fileInputRef.current.click()}
+          onKeyDown={(e) => !loading && (e.key === 'Enter' || e.key === ' ') && fileInputRef.current.click()}
+          tabIndex={0}
+          role="button"
+          aria-label="Upload a .docx or .pdf file"
+          aria-busy={loading}
+        >
+          {loading ? (
+            <div className="loading-state" aria-live="polite">
+              <div className="spinner" aria-hidden="true" />
+              <p className="dropzone-label">Converting…</p>
+            </div>
+          ) : (
+            <>
+              <svg className="dropzone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M12 16V8m0 0-3 3m3-3 3 3" />
+                <path d="M20 16.5A4.5 4.5 0 0 0 15.5 12H14a6 6 0 1 0-11.8 1.5" />
+              </svg>
+              <p className="dropzone-label">Drop your file here</p>
+              <p className="dropzone-sub">or click to browse</p>
+              <p className="dropzone-hint">.docx and .pdf files supported</p>
+            </>
+          )}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept={ACCEPTED.join(',')}
+            style={{ display: 'none' }}
+            onChange={handleFileInput}
+          />
+        </div>
+        {error && <p className="error-message" role="alert">{error}</p>}
+        <p className="pdf-warning">Works best with text-based PDFs. Tables, columns, and scanned pages may not convert well.</p>
       </div>
-      {error && <p className="error-message" role="alert">{error}</p>}
-      <p className="pdf-warning">Works best with text-based PDFs. Tables, columns, and scanned pages may not convert well.</p>
-    </div>
+      <section className="edu-section">
+        <p className="edu-intro">
+          Most documents aren't built for AI. They're built for printers. When you upload a PDF or Word file, the AI spends a significant chunk of its reading budget on fonts, layout data, and formatting it can't use. tokendrop converts your files to Markdown first, so the AI gets straight to the content that actually matters and you get more out of every session.
+        </p>
+        <div className="stat-cards">
+          <div className="stat-card">
+            <span className="stat-figure">up to 3×</span>
+            <p className="stat-body">A typical PDF uses 3 times more tokens than the same content as Markdown. That's formatting noise the AI reads but doesn't need.</p>
+            <p className="stat-why">Convert your files first and your AI tool works with less waste, so you get more out of every session.</p>
+          </div>
+          <div className="stat-divider" />
+          <div className="stat-card">
+            <span className="stat-figure">fit more in</span>
+            <p className="stat-body">Every AI tool has a limit on how much it can read at once. Fewer tokens means more of your actual content fits: more pages, more sources, better answers.</p>
+            <p className="stat-why">For students and professionals working with long documents, that extra space can be the difference between a partial answer and a complete one.</p>
+          </div>
+          <div className="stat-divider" />
+          <div className="stat-card">
+            <span className="stat-figure">just the words</span>
+            <p className="stat-body">Markdown strips away invisible formatting clutter. What's left is clean, structured text. Exactly what AI is designed to read.</p>
+            <p className="stat-why">Cleaner input means the AI spends its effort on your content, not your formatting.</p>
+          </div>
+        </div>
+      </section>
+      <footer className="app-footer">
+        Built by Zachary Sullivan
+      </footer>
+    </>
   )
 }
