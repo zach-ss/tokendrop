@@ -30,7 +30,7 @@ function TokenSavings({ stats }) {
     if (prevSaving.current === stats.saving) return
     prevSaving.current = stats.saving
 
-    const duration = 800
+    const duration = 2000
     const start = performance.now()
     const target = stats.saving
     let rafId
@@ -128,14 +128,11 @@ export default function App() {
       const arrayBuffer = e.target.result
 
       if (type === 'docx') {
-        Promise.all([
-          mammoth.convertToMarkdown({ arrayBuffer }),
-          mammoth.extractRawText({ arrayBuffer }),
-        ])
-          .then(([result, rawResult]) => {
+        mammoth.convertToMarkdown({ arrayBuffer })
+          .then((result) => {
             const cleaned = result.value
               .replace(/\\([()[\]{}*_`#|>!.+-])/g, '$1')
-            const original = estimateTokens(rawResult.value)
+            const original = Math.round(file.size / 4)
             const converted = estimateTokens(cleaned)
             setTokenStats({
               original,
