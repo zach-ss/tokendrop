@@ -71,6 +71,7 @@ export default function App() {
   const [copied, setCopied] = useState(false)
   const [loading, setLoading] = useState(false)
   const [tokenStats, setTokenStats] = useState(null)
+  const [scanned, setScanned] = useState(false)
   const fileInputRef = useRef(null)
   const errorTimerRef = useRef(null)
   const copiedTimerRef = useRef(null)
@@ -100,6 +101,7 @@ export default function App() {
       setCopied(false)
       setLoading(false)
       setTokenStats(null)
+      setScanned(false)
     }
     window.addEventListener('popstate', onPop)
     return () => window.removeEventListener('popstate', onPop)
@@ -169,6 +171,7 @@ export default function App() {
               converted,
               saving: Math.max(0, Math.round((1 - converted / original) * 100)),
             })
+            setScanned(false)
             setMarkdown(md)
             if (!md.trim()) {
               showError('PDF converted but no readable text was found.')
@@ -244,6 +247,7 @@ export default function App() {
     setCopied(false)
     setLoading(false)
     setTokenStats(null)
+    setScanned(false)
   }, [])
 
   if (view === 'editor') {
@@ -255,6 +259,7 @@ export default function App() {
             <span className="file-size">{formatBytes(fileSize)}</span>
           </div>
           <TokenSavings stats={tokenStats} />
+          {scanned && <p className="scanned-warning">This PDF appears to be scanned — text extraction may be incomplete.</p>}
           <hr className="divider" />
           <div className="actions">
             <button type="button" className="btn btn-primary" onClick={handleCopy}>
@@ -267,9 +272,6 @@ export default function App() {
               Convert Another
             </button>
           </div>
-          <button type="button" className="btn btn-ghost btn-start-over" onClick={handleReset}>
-            Start over
-          </button>
           <p className="left-panel-footer">
             Powered by{' '}
             <a href="https://github.com/mwilliamson/mammoth.js" target="_blank" rel="noreferrer">
@@ -336,6 +338,7 @@ export default function App() {
         />
       </div>
       {error && <p className="error-message" role="alert">{error}</p>}
+      <p className="pdf-warning">Works best with text-based PDFs. Tables, columns, and scanned pages may not convert well.</p>
     </div>
   )
 }

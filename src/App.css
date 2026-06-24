@@ -175,6 +175,22 @@ body {
   margin-top: 0.4rem;
 }
 
+.scanned-warning {
+  font-size: 0.78rem;
+  color: var(--text);
+  opacity: 0.5;
+  text-align: center;
+  margin-top: 0.5rem;
+}
+
+.pdf-warning {
+  font-size: 0.78rem;
+  color: var(--text);
+  opacity: 0.4;
+  text-align: center;
+  margin-top: 1.75rem;
+}
+
 /* ── EDITOR VIEW ── */
 
 .editor-view {
