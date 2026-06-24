@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
+import { Analytics } from '@vercel/analytics/react'
 import mammoth from 'mammoth'
 import { pdfToMarkdown } from './pdfToMarkdown.js'
 
@@ -413,6 +414,7 @@ export default function App() {
       <footer className="app-footer">
         Built by Zachary Sullivan
       </footer>
+      <Analytics />
     </>
   )
 }
