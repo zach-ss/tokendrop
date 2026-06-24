@@ -38,6 +38,26 @@ export default function App() {
     }
   }, [])
 
+  // Push a history entry when entering editor view; popstate resets to drop
+  useEffect(() => {
+    if (view === 'editor') {
+      window.history.pushState({ tokendrop: true }, '')
+    }
+  }, [view])
+
+  useEffect(() => {
+    const onPop = () => {
+      setView('drop')
+      setMarkdown('')
+      setFileName('')
+      setFileSize(0)
+      setCopied(false)
+      setLoading(false)
+    }
+    window.addEventListener('popstate', onPop)
+    return () => window.removeEventListener('popstate', onPop)
+  }, [])
+
   const showError = useCallback((msg) => {
     setError(msg)
     clearTimeout(errorTimerRef.current)
@@ -184,6 +204,9 @@ export default function App() {
               Convert Another
             </button>
           </div>
+          <button type="button" className="btn btn-ghost btn-start-over" onClick={handleReset}>
+            Start over
+          </button>
           <p className="left-panel-footer">
             Powered by{' '}
             <a href="https://github.com/mwilliamson/mammoth.js" target="_blank" rel="noreferrer">
