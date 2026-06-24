@@ -23,11 +23,12 @@ function estimateTokens(str) {
 function TokenSavings({ stats }) {
   const [display, setDisplay] = useState(0)
   const [opacity, setOpacity] = useState(0)
-  const hasRun = useRef(false)
+  const prevSaving = useRef(null)
 
   useEffect(() => {
-    if (!stats || hasRun.current) return
-    hasRun.current = true
+    if (!stats) return
+    if (prevSaving.current === stats.saving) return
+    prevSaving.current = stats.saving
 
     const duration = 800
     const start = performance.now()
@@ -127,11 +128,14 @@ export default function App() {
       const arrayBuffer = e.target.result
 
       if (type === 'docx') {
-        mammoth.convertToMarkdown({ arrayBuffer })
-          .then((result) => {
+        Promise.all([
+          mammoth.convertToMarkdown({ arrayBuffer }),
+          mammoth.extractRawText({ arrayBuffer }),
+        ])
+          .then(([result, rawResult]) => {
             const cleaned = result.value
               .replace(/\\([()[\]{}*_`#|>!.+-])/g, '$1')
-            const original = Math.round(file.size / 4)
+            const original = estimateTokens(rawResult.value)
             const converted = estimateTokens(cleaned)
             setTokenStats({
               original,
