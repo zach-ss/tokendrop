@@ -265,8 +265,8 @@ body {
   }
 
   .right-panel {
-    flex: none;
-    height: 60vh;
+    flex: 1;
+    min-height: 40vh;
     animation: slideInRight 0.35s ease both;
   }
 

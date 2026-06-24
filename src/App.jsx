@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import mammoth from 'mammoth'
 
 function formatBytes(bytes) {
@@ -17,6 +17,16 @@ export default function App() {
   const [copied, setCopied] = useState(false)
   const fileInputRef = useRef(null)
   const errorTimerRef = useRef(null)
+  const copiedTimerRef = useRef(null)
+  const dragCounterRef = useRef(0)
+
+  // Clear timers on unmount to prevent state updates on unmounted component
+  useEffect(() => {
+    return () => {
+      clearTimeout(errorTimerRef.current)
+      clearTimeout(copiedTimerRef.current)
+    }
+  }, [])
 
   const showError = useCallback((msg) => {
     setError(msg)
@@ -40,29 +50,42 @@ export default function App() {
           const cleaned = result.value
             .replace(/\\([()[\]{}*_`#|>!.+-])/g, '$1')
           setMarkdown(cleaned)
+          if (!cleaned.trim()) {
+            showError('File converted but appears to contain no readable text.')
+          }
           setView('editor')
         })
         .catch(() => {
           showError('Could not convert this file. Make sure it is a valid .docx.')
         })
     }
+    reader.onerror = () => {
+      showError('Could not read this file.')
+    }
     reader.readAsArrayBuffer(file)
   }, [showError])
 
   const handleDrop = useCallback((e) => {
     e.preventDefault()
+    dragCounterRef.current = 0
     setDragOver(false)
     const file = e.dataTransfer.files[0]
     processFile(file)
   }, [processFile])
 
-  const handleDragOver = useCallback((e) => {
+  const handleDragEnter = useCallback((e) => {
     e.preventDefault()
+    dragCounterRef.current += 1
     setDragOver(true)
   }, [])
 
+  const handleDragOver = useCallback((e) => {
+    e.preventDefault()
+  }, [])
+
   const handleDragLeave = useCallback(() => {
-    setDragOver(false)
+    dragCounterRef.current -= 1
+    if (dragCounterRef.current === 0) setDragOver(false)
   }, [])
 
   const handleFileInput = useCallback((e) => {
@@ -73,9 +96,12 @@ export default function App() {
   const handleCopy = useCallback(() => {
     navigator.clipboard.writeText(markdown).then(() => {
       setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
+      clearTimeout(copiedTimerRef.current)
+      copiedTimerRef.current = setTimeout(() => setCopied(false), 2000)
+    }).catch(() => {
+      showError('Could not access clipboard. Please copy the text manually.')
     })
-  }, [markdown])
+  }, [markdown, showError])
 
   const handleDownload = useCallback(() => {
     const blob = new Blob([markdown], { type: 'text/markdown' })
@@ -105,13 +131,13 @@ export default function App() {
           </div>
           <hr className="divider" />
           <div className="actions">
-            <button className="btn btn-primary" onClick={handleCopy}>
+            <button type="button" className="btn btn-primary" onClick={handleCopy}>
               {copied ? 'Copied!' : 'Copy Markdown'}
             </button>
-            <button className="btn btn-primary" onClick={handleDownload}>
+            <button type="button" className="btn btn-primary" onClick={handleDownload}>
               Download .md
             </button>
-            <button className="btn btn-ghost" onClick={handleReset}>
+            <button type="button" className="btn btn-ghost" onClick={handleReset}>
               Convert Another
             </button>
           </div>
@@ -141,6 +167,7 @@ export default function App() {
       <div
         className={`dropzone${dragOver ? ' drag-over' : ''}`}
         onDrop={handleDrop}
+        onDragEnter={handleDragEnter}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onClick={() => fileInputRef.current.click()}
