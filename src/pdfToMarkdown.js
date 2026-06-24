@@ -32,7 +32,7 @@ export async function pdfToMarkdown(arrayBuffer) {
   return { markdown, rawText, scanned: false }
 }
 
-function extractPageBlocks(items, page) {
+function extractPageBlocks(items, _page) {
   if (!items.length) return []
 
   // Group items into lines by their Y coordinate (within 2pt tolerance)
@@ -66,7 +66,7 @@ function extractPageBlocks(items, page) {
     else if (size >= bodySize * 1.25 || (size >= bodySize * 1.1 && isBold)) type = 'h2'
     else if (isBold && size >= bodySize) type = 'h3'
 
-    const isBullet = /^[•‣◦⁃∙\-\*]\s/.test(text)
+    const isBullet = /^[•‣◦⁃∙\-*]\s/.test(text)
 
     return { type: isBullet ? 'li' : type, text: isBullet ? text.replace(/^.\s+/, '') : text }
   }).filter(Boolean)

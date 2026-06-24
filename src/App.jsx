@@ -201,7 +201,7 @@ export default function App() {
 
       if (type === 'pdf') {
         pdfToMarkdown(arrayBuffer)
-          .then(({ markdown: md, rawText, scanned }) => {
+          .then(({ markdown: md, scanned }) => {
             setLoading(false)
             if (scanned) {
               showError(
