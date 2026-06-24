@@ -1,10 +1,19 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import mammoth from 'mammoth'
+import { pdfToMarkdown } from './pdfToMarkdown.js'
 
 function formatBytes(bytes) {
   if (bytes < 1024) return bytes + ' B'
   if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB'
   return (bytes / (1024 * 1024)).toFixed(1) + ' MB'
+}
+
+const ACCEPTED = ['.docx', '.pdf']
+
+function getFileType(file) {
+  if (file.name.endsWith('.docx')) return 'docx'
+  if (file.name.endsWith('.pdf')) return 'pdf'
+  return null
 }
 
 export default function App() {
@@ -15,6 +24,7 @@ export default function App() {
   const [dragOver, setDragOver] = useState(false)
   const [error, setError] = useState('')
   const [copied, setCopied] = useState(false)
+  const [loading, setLoading] = useState(false)
   const fileInputRef = useRef(null)
   const errorTimerRef = useRef(null)
   const copiedTimerRef = useRef(null)
@@ -31,35 +41,67 @@ export default function App() {
   const showError = useCallback((msg) => {
     setError(msg)
     clearTimeout(errorTimerRef.current)
-    errorTimerRef.current = setTimeout(() => setError(''), 3000)
+    errorTimerRef.current = setTimeout(() => setError(''), 5000)
   }, [])
 
   const processFile = useCallback((file) => {
     if (!file) return
-    if (!file.name.endsWith('.docx')) {
-      showError('Please upload a .docx file.')
+    const type = getFileType(file)
+    if (!type) {
+      showError('Please upload a .docx or .pdf file.')
       return
     }
+
     setFileName(file.name)
     setFileSize(file.size)
+    setLoading(true)
+
     const reader = new FileReader()
     reader.onload = (e) => {
       const arrayBuffer = e.target.result
-      mammoth.convertToMarkdown({ arrayBuffer })
-        .then((result) => {
-          const cleaned = result.value
-            .replace(/\\([()[\]{}*_`#|>!.+-])/g, '$1')
-          setMarkdown(cleaned)
-          if (!cleaned.trim()) {
-            showError('File converted but appears to contain no readable text.')
-          }
-          setView('editor')
-        })
-        .catch(() => {
-          showError('Could not convert this file. Make sure it is a valid .docx.')
-        })
+
+      if (type === 'docx') {
+        mammoth.convertToMarkdown({ arrayBuffer })
+          .then((result) => {
+            const cleaned = result.value
+              .replace(/\\([()[\]{}*_`#|>!.+-])/g, '$1')
+            setMarkdown(cleaned)
+            setLoading(false)
+            if (!cleaned.trim()) {
+              showError('File converted but appears to contain no readable text.')
+            }
+            setView('editor')
+          })
+          .catch(() => {
+            setLoading(false)
+            showError('Could not convert this file. Make sure it is a valid .docx.')
+          })
+      }
+
+      if (type === 'pdf') {
+        pdfToMarkdown(arrayBuffer)
+          .then(({ markdown: md, scanned }) => {
+            setLoading(false)
+            if (scanned) {
+              showError(
+                'This PDF appears to be a scanned image. Scanned PDFs don\'t contain selectable text, so conversion isn\'t possible yet. Try exporting your document as a .docx instead.'
+              )
+              return
+            }
+            setMarkdown(md)
+            if (!md.trim()) {
+              showError('PDF converted but no readable text was found.')
+            }
+            setView('editor')
+          })
+          .catch(() => {
+            setLoading(false)
+            showError('Could not read this PDF. Make sure it is a valid, text-based PDF.')
+          })
+      }
     }
     reader.onerror = () => {
+      setLoading(false)
       showError('Could not read this file.')
     }
     reader.readAsArrayBuffer(file)
@@ -108,7 +150,7 @@ export default function App() {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = fileName.replace(/\.docx$/i, '.md')
+    a.download = fileName.replace(/\.(docx|pdf)$/i, '.md')
     a.click()
     URL.revokeObjectURL(url)
   }, [markdown, fileName])
@@ -119,6 +161,7 @@ export default function App() {
     setFileName('')
     setFileSize(0)
     setCopied(false)
+    setLoading(false)
   }, [])
 
   if (view === 'editor') {
@@ -146,6 +189,10 @@ export default function App() {
             <a href="https://github.com/mwilliamson/mammoth.js" target="_blank" rel="noreferrer">
               mammoth.js
             </a>
+            {' & '}
+            <a href="https://mozilla.github.io/pdf.js/" target="_blank" rel="noreferrer">
+              pdf.js
+            </a>
           </p>
         </aside>
         <main className="right-panel">
@@ -166,28 +213,38 @@ export default function App() {
       <span className="app-title">tokendrop</span>
       <p className="app-tagline">AI reads markdown better than Word or PDF. Convert instantly — no accounts, nothing leaves your browser.</p>
       <div
-        className={`dropzone${dragOver ? ' drag-over' : ''}`}
+        className={`dropzone${dragOver ? ' drag-over' : ''}${loading ? ' loading' : ''}`}
         onDrop={handleDrop}
         onDragEnter={handleDragEnter}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
-        onClick={() => fileInputRef.current.click()}
-        onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && fileInputRef.current.click()}
+        onClick={() => !loading && fileInputRef.current.click()}
+        onKeyDown={(e) => !loading && (e.key === 'Enter' || e.key === ' ') && fileInputRef.current.click()}
         tabIndex={0}
         role="button"
-        aria-label="Upload a .docx file"
+        aria-label="Upload a .docx or .pdf file"
+        aria-busy={loading}
       >
-        <svg className="dropzone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="M12 16V8m0 0-3 3m3-3 3 3" />
-          <path d="M20 16.5A4.5 4.5 0 0 0 15.5 12H14a6 6 0 1 0-11.8 1.5" />
-        </svg>
-        <p className="dropzone-label">Drop your .docx file here</p>
-        <p className="dropzone-sub">or click to browse</p>
-        <p className="dropzone-hint">.docx files only</p>
+        {loading ? (
+          <div className="loading-state" aria-live="polite">
+            <div className="spinner" aria-hidden="true" />
+            <p className="dropzone-label">Converting…</p>
+          </div>
+        ) : (
+          <>
+            <svg className="dropzone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M12 16V8m0 0-3 3m3-3 3 3" />
+              <path d="M20 16.5A4.5 4.5 0 0 0 15.5 12H14a6 6 0 1 0-11.8 1.5" />
+            </svg>
+            <p className="dropzone-label">Drop your file here</p>
+            <p className="dropzone-sub">or click to browse</p>
+            <p className="dropzone-hint">.docx and .pdf files supported</p>
+          </>
+        )}
         <input
           ref={fileInputRef}
           type="file"
-          accept=".docx"
+          accept={ACCEPTED.join(',')}
           style={{ display: 'none' }}
           onChange={handleFileInput}
         />

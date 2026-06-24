@@ -112,6 +112,31 @@ body {
   margin-top: 0.25rem;
 }
 
+.dropzone.loading {
+  cursor: default;
+  pointer-events: none;
+}
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 2.5px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 .error-message {
   margin-top: 1rem;
   font-size: 0.875rem;
@@ -287,7 +312,7 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .left-panel, .right-panel, .dropzone, .error-message {
+  .left-panel, .right-panel, .dropzone, .error-message, .spinner {
     animation: none;
     transition: none;
   }
