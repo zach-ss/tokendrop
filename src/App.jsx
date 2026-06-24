@@ -16,6 +16,50 @@ function getFileType(file) {
   return null
 }
 
+function estimateTokens(str) {
+  return Math.round(str.length / 4)
+}
+
+function TokenSavings({ stats }) {
+  const [display, setDisplay] = useState(0)
+  const [opacity, setOpacity] = useState(0)
+  const hasRun = useRef(false)
+
+  useEffect(() => {
+    if (!stats || hasRun.current) return
+    hasRun.current = true
+
+    const duration = 800
+    const start = performance.now()
+    const target = stats.saving
+    let rafId
+
+    function tick(now) {
+      const elapsed = now - start
+      const progress = Math.min(elapsed / duration, 1)
+      // ease-out: decelerate toward the end
+      const eased = 1 - Math.pow(1 - progress, 3)
+      setDisplay(Math.round(eased * target))
+      setOpacity(eased)
+      if (progress < 1) rafId = requestAnimationFrame(tick)
+    }
+
+    rafId = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(rafId)
+  }, [stats])
+
+  if (!stats) return null
+
+  return (
+    <div className="token-savings" style={{ opacity }}>
+      <div className="token-savings-percent">{display}% fewer tokens</div>
+      <p className="token-savings-raw">
+        {stats.original.toLocaleString()} tokens → {stats.converted.toLocaleString()} tokens
+      </p>
+    </div>
+  )
+}
+
 export default function App() {
   const [view, setView] = useState('drop')
   const [markdown, setMarkdown] = useState('')
@@ -25,6 +69,7 @@ export default function App() {
   const [error, setError] = useState('')
   const [copied, setCopied] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [tokenStats, setTokenStats] = useState(null)
   const fileInputRef = useRef(null)
   const errorTimerRef = useRef(null)
   const copiedTimerRef = useRef(null)
@@ -53,6 +98,7 @@ export default function App() {
       setFileSize(0)
       setCopied(false)
       setLoading(false)
+      setTokenStats(null)
     }
     window.addEventListener('popstate', onPop)
     return () => window.removeEventListener('popstate', onPop)
@@ -81,10 +127,20 @@ export default function App() {
       const arrayBuffer = e.target.result
 
       if (type === 'docx') {
-        mammoth.convertToMarkdown({ arrayBuffer })
-          .then((result) => {
+        Promise.all([
+          mammoth.convertToMarkdown({ arrayBuffer }),
+          mammoth.extractRawText({ arrayBuffer }),
+        ])
+          .then(([result, rawResult]) => {
             const cleaned = result.value
               .replace(/\\([()[\]{}*_`#|>!.+-])/g, '$1')
+            const original = estimateTokens(rawResult.value)
+            const converted = estimateTokens(cleaned)
+            setTokenStats({
+              original,
+              converted,
+              saving: Math.round((1 - converted / original) * 100),
+            })
             setMarkdown(cleaned)
             setLoading(false)
             if (!cleaned.trim()) {
@@ -182,6 +238,7 @@ export default function App() {
     setFileSize(0)
     setCopied(false)
     setLoading(false)
+    setTokenStats(null)
   }, [])
 
   if (view === 'editor') {
@@ -219,6 +276,7 @@ export default function App() {
           </p>
         </aside>
         <main className="right-panel">
+          <TokenSavings stats={tokenStats} />
           <textarea
             className="markdown-textarea"
             value={markdown}

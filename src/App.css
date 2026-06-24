@@ -150,6 +150,26 @@ body {
   to   { opacity: 1; transform: translateY(0); }
 }
 
+/* ── TOKEN SAVINGS ── */
+
+.token-savings {
+  margin: 2rem 0;
+  text-align: center;
+}
+
+.token-savings-percent {
+  font-size: 2.5rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.token-savings-raw {
+  font-size: 0.85rem;
+  color: var(--text);
+  opacity: 0.45;
+  margin-top: 0.4rem;
+}
+
 /* ── EDITOR VIEW ── */
 
 .editor-view {
