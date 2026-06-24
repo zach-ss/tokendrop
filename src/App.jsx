@@ -164,6 +164,7 @@ export default function App() {
   return (
     <div className="dropzone-view">
       <span className="app-title">tokendrop</span>
+      <p className="app-tagline">AI reads markdown better than Word or PDF. Convert instantly — no accounts, nothing leaves your browser.</p>
       <div
         className={`dropzone${dragOver ? ' drag-over' : ''}`}
         onDrop={handleDrop}
