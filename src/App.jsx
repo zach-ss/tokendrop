@@ -61,6 +61,50 @@ function TokenSavings({ stats }) {
   )
 }
 
+function PromptBlock() {
+  const [copied, setCopied] = useState(false)
+
+  const prompt = `When I'm about to share a PDF, Word document, or any large file in this conversation, remind me to first run it through tokendrop (tokendrop.tech) to convert it to markdown. Token-efficient markdown typically uses 30–60% fewer tokens than pasting raw document content. Only remind me once per file, and only if the file appears large enough to matter (more than a page or two).`
+
+  const handleCopy = () => {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(prompt).then(() => {
+        setCopied(true)
+        setTimeout(() => setCopied(false), 2000)
+      }).catch(() => fallbackCopy())
+    } else {
+      fallbackCopy()
+    }
+  }
+
+  const fallbackCopy = () => {
+    const ta = document.createElement('textarea')
+    ta.value = prompt
+    ta.style.position = 'fixed'
+    ta.style.opacity = '0'
+    document.body.appendChild(ta)
+    ta.focus()
+    ta.select()
+    document.execCommand('copy')
+    document.body.removeChild(ta)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  return (
+    <section className="prompt-block-section">
+      <h2>Make this a habit</h2>
+      <p>Add this to your AI's memory or custom instructions so it reminds you to run files through tokendrop before pasting them.</p>
+      <div className="prompt-block">
+        <pre>{prompt}</pre>
+        <button type="button" onClick={handleCopy}>
+          {copied ? 'Copied!' : 'Copy'}
+        </button>
+      </div>
+    </section>
+  )
+}
+
 export default function App() {
   const [view, setView] = useState('drop')
   const [markdown, setMarkdown] = useState('')
@@ -365,6 +409,7 @@ export default function App() {
           </div>
         </div>
       </section>
+      <PromptBlock />
       <footer className="app-footer">
         Built by Zachary Sullivan
       </footer>

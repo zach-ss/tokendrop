@@ -482,3 +482,66 @@ body {
     padding-bottom: 0;
   }
 }
+
+/* ── PROMPT BLOCK ── */
+
+.prompt-block-section {
+  max-width: 860px;
+  margin: 0 auto;
+  padding-top: 48px;
+  padding-bottom: 64px;
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
+.prompt-block-section h2 {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #111110;
+}
+
+.prompt-block-section p {
+  font-size: 14px;
+  color: #6B6B6B;
+  margin-bottom: 16px;
+}
+
+.prompt-block {
+  position: relative;
+  background: #1E211E;
+  border: 1px solid #2E372E;
+  border-radius: 8px;
+  padding: 20px 90px 20px 24px;
+}
+
+.prompt-block pre {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #C8C8C2;
+  white-space: nowrap;
+  overflow-x: auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0;
+}
+
+.prompt-block button {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: transparent;
+  border: 1px solid #5C7A5C;
+  color: #5C7A5C;
+  font-size: 12px;
+  padding: 4px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.prompt-block button:hover {
+  background: #5C7A5C;
+  color: #F9F9F7;
+}
