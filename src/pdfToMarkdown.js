@@ -27,8 +27,9 @@ export async function pdfToMarkdown(arrayBuffer) {
     return { markdown: '', scanned: true }
   }
 
+  const rawText = pageBlocks.flat().map((b) => b.text).join(' ')
   const markdown = pageBlocks.map(renderBlocks).join('\n\n---\n\n').trim()
-  return { markdown, scanned: false }
+  return { markdown, rawText, scanned: false }
 }
 
 function extractPageBlocks(items, page) {

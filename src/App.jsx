@@ -139,7 +139,7 @@ export default function App() {
             setTokenStats({
               original,
               converted,
-              saving: Math.round((1 - converted / original) * 100),
+              saving: Math.max(0, Math.round((1 - converted / original) * 100)),
             })
             setMarkdown(cleaned)
             setLoading(false)
@@ -156,7 +156,7 @@ export default function App() {
 
       if (type === 'pdf') {
         pdfToMarkdown(arrayBuffer)
-          .then(({ markdown: md, scanned }) => {
+          .then(({ markdown: md, rawText, scanned }) => {
             setLoading(false)
             if (scanned) {
               showError(
@@ -164,6 +164,13 @@ export default function App() {
               )
               return
             }
+            const original = estimateTokens(rawText)
+            const converted = estimateTokens(md)
+            setTokenStats({
+              original,
+              converted,
+              saving: Math.max(0, Math.round((1 - converted / original) * 100)),
+            })
             setMarkdown(md)
             if (!md.trim()) {
               showError('PDF converted but no readable text was found.')
@@ -249,6 +256,7 @@ export default function App() {
             <span className="file-name">{fileName}</span>
             <span className="file-size">{formatBytes(fileSize)}</span>
           </div>
+          <TokenSavings stats={tokenStats} />
           <hr className="divider" />
           <div className="actions">
             <button type="button" className="btn btn-primary" onClick={handleCopy}>
@@ -276,7 +284,6 @@ export default function App() {
           </p>
         </aside>
         <main className="right-panel">
-          <TokenSavings stats={tokenStats} />
           <textarea
             className="markdown-textarea"
             value={markdown}
