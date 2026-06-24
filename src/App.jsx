@@ -127,14 +127,11 @@ export default function App() {
       const arrayBuffer = e.target.result
 
       if (type === 'docx') {
-        Promise.all([
-          mammoth.convertToMarkdown({ arrayBuffer }),
-          mammoth.extractRawText({ arrayBuffer }),
-        ])
-          .then(([result, rawResult]) => {
+        mammoth.convertToMarkdown({ arrayBuffer })
+          .then((result) => {
             const cleaned = result.value
               .replace(/\\([()[\]{}*_`#|>!.+-])/g, '$1')
-            const original = estimateTokens(rawResult.value)
+            const original = Math.round(file.size / 4)
             const converted = estimateTokens(cleaned)
             setTokenStats({
               original,
@@ -164,7 +161,7 @@ export default function App() {
               )
               return
             }
-            const original = estimateTokens(rawText)
+            const original = Math.round(file.size / 4)
             const converted = estimateTokens(md)
             setTokenStats({
               original,
