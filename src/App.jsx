@@ -61,7 +61,18 @@ function TokenSavings({ stats }) {
     </div>
   )
 }
-
+function FaqItem({ question, answer }) {
+  const [open, setOpen] = useState(false)
+  return (
+    <div className="faq-item">
+      <button className="faq-question" onClick={() => setOpen(!open)} aria-expanded={open}>
+        {question}
+        <span className="faq-plus">{open ? '−' : '+'}</span>
+      </button>
+      {open && <p className="faq-answer">{answer}</p>}
+    </div>
+  )
+}
 function PromptBlock() {
   const [copied, setCopied] = useState(false)
 
