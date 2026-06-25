@@ -5,11 +5,8 @@ export default function Privacy() {
         <h1>Privacy Policy</h1>
         <p className="legal-date">Last updated: June 2026</p>
 
-        <h2>Who we are</h2>
-        <p>TokenDrop is a free browser-based tool that converts PDF and DOCX files into Markdown. It is operated by an individual based in Australia.</p>
-
-        <h2>The short version</h2>
-        <p>TokenDrop does not collect, store, or transmit your documents or their contents. All file processing happens entirely within your own browser. Nothing you upload ever leaves your device.</p>
+       <h2>Who we are</h2>
+        <p>TokenDrop is a free browser-based tool that converts PDF and DOCX files into Markdown format. All file processing happens locally in your browser. Nothing you upload ever leaves your device.</p>
 
         <h2>What information we collect</h2>
         <p>TokenDrop itself collects no personal information from you. No account is required to use the tool.</p>
