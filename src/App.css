@@ -636,7 +636,7 @@ body {
   color: var(--text);
   opacity: 0.6;
   line-height: 1.7;
-  padding: 0 0 18px;
+  padding: 0 2.5rem 18px 0;
   margin: 0;
-  max-width: 640px;
+  max-width: 100%;
 }
