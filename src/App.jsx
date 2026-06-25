@@ -423,6 +423,24 @@ export default function App() {
         </div>
       </section>
       <PromptBlock />
+    <section className="faq-section">
+        <p className="faq-label">Questions</p>
+        <h2 className="faq-title">TokenDrop FAQs</h2>
+        {[
+          { q: "What is TokenDrop?", a: "A free browser-based tool that converts PDF and DOCX files into clean markdown — a lightweight format AI tools can read more efficiently." },
+          { q: "Why does this exist?", a: "Built by Zachary Sullivan, a law student who kept watching lengthy cases and legal documents eat through his AI usage limits. So he built one." },
+          { q: "How does it work?", a: "Upload your PDF or DOCX file and TokenDrop instantly converts it to markdown in your browser. Preview and edit the result, then copy or download it." },
+          { q: "What is markdown, exactly?", a: "A simple plain-text format that uses minimal characters to convey structure. No hidden metadata or formatting overhead — just content." },
+          { q: "Why does markdown use fewer tokens?", a: "PDFs and DOCX files carry invisible formatting data, layout instructions, and encoding overhead that all count toward your token limit. Markdown strips all of that out." },
+          { q: "What file types does TokenDrop support?", a: "Currently PDF (text-based, not scanned) and DOCX. More formats are on the roadmap." },
+          { q: "Is my data safe?", a: "Yes. Everything is processed directly in your browser. Your files are never uploaded to a server or stored anywhere." },
+          { q: "Does it cost anything?", a: "No. TokenDrop is completely free with no account required." },
+          { q: "Who is it for?", a: "Anyone who uses AI tools regularly — law students, researchers, analysts, writers, developers — and wants to get more out of every conversation without hitting token limits." },
+          { q: "Can I edit the markdown before I use it?", a: "Yes. After conversion you get a live preview where you can make edits before copying or downloading the final output." },
+        ].map((item, i) => (
+          <FaqItem key={i} question={item.q} answer={item.a} />
+        ))}
+      </section>
       <footer className="app-footer">
         Built by Zachary Sullivan
       </footer>
