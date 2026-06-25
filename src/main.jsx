@@ -4,6 +4,8 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import App from './App.jsx'
 import Terms from './Terms.jsx'
 import Privacy from './Privacy.jsx'
+import ReactGA from 'react-ga4'
+ReactGA.initialize('G-6WQ7860RWL')
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
