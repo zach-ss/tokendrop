@@ -41,6 +41,63 @@
       }
     }
     </script>
+    <!-- FAQ structured data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Is TokenDrop free to use?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, completely free. No account, no payment, no limits."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Are my files uploaded to a server?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. All conversion happens in your browser. Your files never leave your device."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why convert to markdown for AI tools?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Markdown is token-efficient plain text. It gives AI models the same information as a PDF or DOCX with up to 80% fewer tokens, saving cost and improving response quality."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What file types does TokenDrop support?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Currently PDF (text-based) and DOCX. PowerPoint and Excel support are coming soon."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Will it work on scanned PDFs?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Scanned PDFs (image-only) are not currently supported. The PDF must have selectable text."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is there a file size limit?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No hard limit. Very large files may take a few seconds to process depending on your device."
+          }
+        }
+      ]
+    }
+    </script>
   </head>
   <body>
     <div id="root"></div>
