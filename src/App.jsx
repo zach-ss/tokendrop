@@ -344,8 +344,8 @@ export default function App() {
   return (
     <>
       <div className="dropzone-view">
-       <span className="app-title">Token<span className="logo-drop">Drop</span></span>
-<h1 className="hero-headline">Fewer tokens.<br /><em>Better results.</em></h1>
+<div className="nav-bar" />
+<span className="app-title">Token<span className="logo-drop">Drop</span></span><h1 className="hero-headline">Fewer tokens.<br /><em>Better results.</em></h1>
 <p className="hero-sub">Convert your documents into clean markdown your AI can actually use efficiently.</p>
         <div
           className={`dropzone${dragOver ? ' drag-over' : ''}${loading ? ' loading' : ''}`}
