@@ -490,6 +490,26 @@ body {
   border-top: 1px solid #ebebea;
 }
 
+.footer-links {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin-bottom: 12px;
+}
+
+.footer-links a {
+  color: #888780;
+  text-decoration: none;
+  font-size: 0.78rem;
+  font-family: 'Inter', sans-serif;
+  letter-spacing: 0.03em;
+  transition: color 0.15s ease;
+}
+
+.footer-links a:hover {
+  color: #5A7A5E;
+}
+
 /* Mobile */
 @media (max-width: 640px) {
   .stat-cards {
