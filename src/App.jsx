@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
+import './App.css'
 import { Analytics } from '@vercel/analytics/react'
 import mammoth from 'mammoth'
 import { pdfToMarkdown } from './pdfToMarkdown.js'
