@@ -441,8 +441,12 @@ export default function App() {
           <FaqItem key={i} question={item.q} answer={item.a} />
         ))}
       </section>
-      <footer className="app-footer">
-        Built by Zachary Sullivan
+    <footer className="app-footer">
+        <div className="footer-links">
+          <a href="/privacy">Privacy Policy</a>
+          <a href="/terms">Terms of Use</a>
+        </div>
+        © 2026 Zachary Sullivan. All rights reserved.
       </footer>
       <Analytics />
     </>
