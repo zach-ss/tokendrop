@@ -282,6 +282,7 @@ body {
   gap: 1.25rem;
   background: var(--bg);
   animation: fadeInPanel 0.35s ease both;
+  position: relative;
 }
 
 @keyframes fadeInPanel {
