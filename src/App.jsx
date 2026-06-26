@@ -119,9 +119,49 @@ function PromptBlock() {
   )
 }
 
+function convertFile(file) {
+  return new Promise((resolve, reject) => {
+    const type = getFileType(file)
+    if (!type) {
+      reject(new Error('Unsupported file type'))
+      return
+    }
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      const arrayBuffer = e.target.result
+      if (type === 'docx') {
+        mammoth.convertToMarkdown({ arrayBuffer })
+          .then((result) => {
+            const markdown = result.value.replace(/\\([()[\]{}*_`#|>!.+-])/g, '$1')
+            const originalTokens = Math.round(file.size / 4)
+            const convertedTokens = estimateTokens(markdown)
+            resolve({ markdown, originalTokens, convertedTokens, scanned: false })
+          })
+          .catch(reject)
+      }
+      if (type === 'pdf') {
+        pdfToMarkdown(arrayBuffer)
+          .then(({ markdown: md, scanned }) => {
+            if (scanned) {
+              resolve({ markdown: '', originalTokens: 0, convertedTokens: 0, scanned: true })
+              return
+            }
+            const originalTokens = Math.round(file.size / 4)
+            const convertedTokens = estimateTokens(md)
+            resolve({ markdown: md, originalTokens, convertedTokens, scanned: false })
+          })
+          .catch(reject)
+      }
+    }
+    reader.onerror = () => reject(new Error('Could not read file'))
+    reader.readAsArrayBuffer(file)
+  })
+}
+
 export default function App() {
   const [view, setView] = useState('drop')
   const [markdown, setMarkdown] = useState('')
+  const accumulatedMarkdownRef = useRef('')
   const [fileName, setFileName] = useState('')
   const [fileSize, setFileSize] = useState(0)
   const [dragOver, setDragOver] = useState(false)
@@ -129,6 +169,8 @@ export default function App() {
   const [copied, setCopied] = useState(false)
   const [loading, setLoading] = useState(false)
   const [tokenStats, setTokenStats] = useState(null)
+  const [totalOriginalTokens, setTotalOriginalTokens] = useState(0)
+  const [totalConvertedTokens, setTotalConvertedTokens] = useState(0)
   const [scanned, setScanned] = useState(false)
   const fileInputRef = useRef(null)
   const errorTimerRef = useRef(null)
@@ -167,6 +209,8 @@ export default function App() {
 
   const [mode, setMode] = useState('file') // 'file' or 'url'
   const [urlInput, setUrlInput] = useState('')
+  const [showAddOverlay, setShowAddOverlay] = useState(false)
+  const [addUrlInput, setAddUrlInput] = useState('')
 
   const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem('td-theme')
@@ -197,71 +241,49 @@ export default function App() {
     setFileSize(file.size)
     setLoading(true)
 
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      const arrayBuffer = e.target.result
-
-      if (type === 'docx') {
-        mammoth.convertToMarkdown({ arrayBuffer })
-          .then((result) => {
-            const cleaned = result.value
-              .replace(/\\([()[\]{}*_`#|>!.+-])/g, '$1')
-            const original = Math.round(file.size / 4)
-            const converted = estimateTokens(cleaned)
-            setTokenStats({
-              original,
-              converted,
-              saving: Math.max(0, Math.round((1 - converted / original) * 100)),
-            })
-            setMarkdown(cleaned)
-            setLoading(false)
-            if (!cleaned.trim()) {
-              showError('File converted but appears to contain no readable text.')
-            }
-            setView('editor')
-          })
-          .catch(() => {
-            setLoading(false)
-            showError('Could not convert this file. Make sure it is a valid .docx.')
-          })
-      }
-
-      if (type === 'pdf') {
-        pdfToMarkdown(arrayBuffer)
-          .then(({ markdown: md, scanned }) => {
-            setLoading(false)
-            if (scanned) {
-              showError(
-                'This PDF appears to be a scanned image. Scanned PDFs don\'t contain selectable text, so conversion isn\'t possible yet. Try exporting your document as a .docx instead.'
-              )
-              return
-            }
-            const original = Math.round(file.size / 4)
-            const converted = estimateTokens(md)
-            setTokenStats({
-              original,
-              converted,
-              saving: Math.max(0, Math.round((1 - converted / original) * 100)),
-            })
-            setScanned(false)
-            setMarkdown(md)
-            if (!md.trim()) {
-              showError('PDF converted but no readable text was found.')
-            }
-            setView('editor')
-          })
-          .catch(() => {
-            setLoading(false)
-            showError('Could not read this PDF. Make sure it is a valid, text-based PDF.')
-          })
-      }
-    }
-    reader.onerror = () => {
-      setLoading(false)
-      showError('Could not read this file.')
-    }
-    reader.readAsArrayBuffer(file)
+    convertFile(file)
+      .then(({ markdown: md, originalTokens, convertedTokens, scanned: isScanned }) => {
+        setLoading(false)
+        if (isScanned) {
+          showError(
+            'This PDF appears to be a scanned image. Scanned PDFs don\'t contain selectable text, so conversion isn\'t possible yet. Try exporting your document as a .docx instead.'
+          )
+          return
+        }
+        setTokenStats({
+          original: originalTokens,
+          converted: convertedTokens,
+          saving: Math.max(0, Math.round((1 - convertedTokens / originalTokens) * 100)),
+        })
+        setScanned(false)
+        setMarkdown(md)
+        if (!md.trim()) {
+          showError(type === 'docx'
+            ? 'File converted but appears to contain no readable text.'
+            : 'PDF converted but no readable text was found.'
+          )
+        }
+        setView('editor')
+      })
+      .catch(() => {
+        setLoading(false)
+        showError(type === 'docx'
+          ? 'Could not convert this file. Make sure it is a valid .docx.'
+          : 'Could not read this PDF. Make sure it is a valid, text-based PDF.'
+        )
+      })
   }, [showError])
+
+  const handleAppend = useCallback((newMarkdown, newOriginalTokens, newConvertedTokens, sourceLabel) => {
+    const separator = `\n\n---\n\n<!-- Source: ${sourceLabel} -->\n\n`
+    const appended = accumulatedMarkdownRef.current + separator + newMarkdown
+    accumulatedMarkdownRef.current = appended
+    setMarkdown(appended)
+    setTotalOriginalTokens(prev => prev + newOriginalTokens)
+    setTotalConvertedTokens(prev => prev + newConvertedTokens)
+    setShowAddOverlay(false)
+    setAddUrlInput('')
+  }, [])
 
   const handleDrop = useCallback((e) => {
     e.preventDefault()
@@ -321,6 +343,11 @@ export default function App() {
     setTokenStats(null)
     setScanned(false)
     setUrlInput('')
+    accumulatedMarkdownRef.current = ''
+    setTotalOriginalTokens(0)
+    setTotalConvertedTokens(0)
+    setShowAddOverlay(false)
+    setAddUrlInput('')
   }, [])
 
   if (view === 'editor') {
@@ -335,6 +362,16 @@ export default function App() {
           {scanned && <p className="scanned-warning">This PDF appears to be scanned. Text extraction may be incomplete.</p>}
           <hr className="divider" />
           <div className="actions">
+            <button
+              className="btn-add-to-doc"
+              onClick={() => {
+                accumulatedMarkdownRef.current = accumulatedMarkdownRef.current || markdown;
+                setShowAddOverlay(true);
+              }}
+            >
+              <i className="ti ti-plus" aria-hidden="true" style={{ fontSize: '14px', verticalAlign: '-1px', marginRight: '5px' }} />
+              Add to document
+            </button>
             <button type="button" className="btn btn-primary" onClick={handleCopy}>
               {copied ? 'Copied!' : 'Copy Markdown'}
             </button>
@@ -345,6 +382,74 @@ export default function App() {
               Convert Another
             </button>
           </div>
+          {showAddOverlay && (
+            <div
+              className="add-overlay-scrim"
+              onClick={(e) => { if (e.target === e.currentTarget) setShowAddOverlay(false); }}
+            >
+              <div className="add-overlay-card">
+                <button className="add-overlay-close" onClick={() => setShowAddOverlay(false)}>×</button>
+                <p className="add-overlay-heading">Keep building your document</p>
+                <div className="add-tile-row">
+                  <div
+                    className="add-tile"
+                    onClick={() => document.getElementById('add-file-input').click()}
+                  >
+                    <i className="ti ti-upload" aria-hidden="true" />
+                    <span className="add-tile-label">Upload files</span>
+                  </div>
+                  <div
+                    className="add-tile"
+                    onClick={() => document.getElementById('add-url-row').style.display = 'flex'}
+                  >
+                    <i className="ti ti-link" aria-hidden="true" />
+                    <span className="add-tile-label">Paste a URL</span>
+                  </div>
+                </div>
+                <div id="add-url-row" style={{ display: 'none', marginTop: '1rem', gap: '8px' }}>
+                  <input
+                    type="text"
+                    className="add-url-input"
+                    placeholder="https://..."
+                    value={addUrlInput}
+                    onChange={e => setAddUrlInput(e.target.value)}
+                  />
+                  <button
+                    className="add-url-submit"
+                    onClick={async () => {
+                      if (!addUrlInput) return;
+                      try {
+                        const { markdown: newMd, originalTokenEstimate, convertedTokenEstimate } = await urlToMarkdown(addUrlInput);
+                        handleAppend(newMd, originalTokenEstimate, convertedTokenEstimate, addUrlInput);
+                      } catch (err) {
+                        console.error(err);
+                      }
+                    }}
+                  >
+                    Add
+                  </button>
+                </div>
+                <input
+                  id="add-file-input"
+                  type="file"
+                  multiple
+                  accept=".pdf,.docx"
+                  style={{ display: 'none' }}
+                  onChange={async (e) => {
+                    const files = Array.from(e.target.files);
+                    for (const file of files) {
+                      try {
+                        const { markdown: newMd, originalTokens, convertedTokens } = await convertFile(file);
+                        handleAppend(newMd, originalTokens, convertedTokens, file.name);
+                      } catch (err) {
+                        console.error(err);
+                      }
+                    }
+                  }}
+                />
+              </div>
+            </div>
+          )}
           <p className="left-panel-footer">
             Powered by{' '}
             <a href="https://github.com/mwilliamson/mammoth.js" target="_blank" rel="noreferrer">

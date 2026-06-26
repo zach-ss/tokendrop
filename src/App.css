@@ -797,3 +797,133 @@ body {
 .url-submit:hover {
   opacity: 0.88;
 }
+
+.btn-add-to-doc {
+  display: inline-flex;
+  align-items: center;
+  padding: 9px 18px;
+  background: var(--surface);
+  color: var(--accent);
+  border: 1.5px solid var(--accent);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.btn-add-to-doc:hover {
+  background: var(--accent);
+  color: #fff;
+}
+
+.add-overlay-scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(95, 140, 114, 0.13);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.add-overlay-card {
+  background: var(--surface);
+  border: 0.5px solid var(--border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  width: 340px;
+  position: relative;
+}
+
+.add-overlay-close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 20px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+  font-family: inherit;
+}
+
+.add-overlay-close:hover {
+  color: var(--text-primary);
+}
+
+.add-overlay-heading {
+  font-family: Georgia, serif;
+  font-size: 16px;
+  font-weight: normal;
+  color: var(--text-primary);
+  margin: 0 0 1.25rem 0;
+}
+
+.add-tile-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.add-tile {
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 1.1rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  background: var(--surface);
+  transition: border-color 0.15s;
+}
+
+.add-tile:hover {
+  border-color: var(--accent);
+}
+
+.add-tile i {
+  font-size: 22px;
+  color: var(--accent);
+}
+
+.add-tile-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  text-align: center;
+}
+
+.add-url-input {
+  flex: 1;
+  padding: 9px 12px;
+  font-size: 13px;
+  border: 1.5px solid var(--accent);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text-primary);
+  font-family: inherit;
+  outline: none;
+}
+
+.add-url-submit {
+  padding: 9px 16px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.add-url-submit:hover {
+  opacity: 0.88;
+}
