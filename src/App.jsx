@@ -465,6 +465,11 @@ export default function App() {
               placeholder="https://..."
               value={addUrlInput}
               onChange={e => setAddUrlInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && (addFiles.length > 0 || addUrlInput.trim())) {
+                  document.querySelector('.add-modal-confirm').click();
+                }
+              }}
             />
 
             <button

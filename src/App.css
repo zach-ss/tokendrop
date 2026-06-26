@@ -824,11 +824,12 @@ body {
   background: var(--surface);
   border: 0.5px solid var(--border);
   border-radius: 14px;
-  padding: 1.75rem 1.5rem 1.5rem;
-  width: 400px;
+  padding: 2rem;
+  width: 420px;
   max-width: 90vw;
   position: relative;
   font-family: inherit;
+  box-sizing: border-box;
 }
 
 .add-modal-close {
@@ -860,7 +861,7 @@ body {
 .add-choose-files-btn {
   width: 100%;
   padding: 11px 16px;
-  border: 1.5px dashed var(--border);
+  border: 1.5px dashed var(--border-strong);
   border-radius: 8px;
   background: var(--surface);
   color: var(--text-secondary);
@@ -886,6 +887,8 @@ body {
   flex-wrap: wrap;
   gap: 6px;
   margin-bottom: 10px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .add-chip {
@@ -898,6 +901,17 @@ body {
   padding: 4px 8px;
   font-size: 12px;
   color: var(--accent);
+  max-width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+.add-chip span:nth-child(2) {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+  min-width: 0;
 }
 
 .add-chip-x {
@@ -913,8 +927,8 @@ body {
 
 .add-modal-divider {
   border: none;
-  border-top: 0.5px solid var(--border);
-  margin: 1rem 0;
+  border-top: 0.5px solid var(--border-strong);
+  margin: 1.25rem 0;
 }
 
 .add-url-label {
@@ -941,6 +955,7 @@ body {
 .add-modal-url-input:focus {
   border-color: var(--accent);
 }
+
 
 .add-modal-confirm {
   width: 100%;
