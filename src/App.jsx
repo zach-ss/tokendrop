@@ -320,6 +320,7 @@ export default function App() {
     setLoading(false)
     setTokenStats(null)
     setScanned(false)
+    setUrlInput('')
   }, [])
 
   if (view === 'editor') {
