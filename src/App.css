@@ -870,7 +870,7 @@ body {
 .add-choose-files-btn {
   width: 100%;
   padding: 14px 16px;
-  border: 1.5px dashed var(--border-strong);
+  border: 1.5px dashed var(--border);
   border-radius: 10px;
   background: var(--surface);
   color: var(--text-secondary);
