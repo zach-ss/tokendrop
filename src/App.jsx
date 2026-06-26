@@ -212,6 +212,7 @@ export default function App() {
   const [showAddOverlay, setShowAddOverlay] = useState(false)
   const [addUrlInput, setAddUrlInput] = useState('')
   const [addFiles, setAddFiles] = useState([])
+  const [addUrls, setAddUrls] = useState([])
   const [addingToDoc, setAddingToDoc] = useState(false)
 
   const [darkMode, setDarkMode] = useState(() => {
@@ -424,7 +425,7 @@ export default function App() {
           onClick={(e) => { if (e.target === e.currentTarget) setShowAddOverlay(false); }}
         >
           <div className="add-modal-card">
-            <button className="add-modal-close" onClick={() => { setShowAddOverlay(false); setAddUrlInput(''); setAddFiles([]); }}>×</button>
+            <button className="add-modal-close" onClick={() => { setShowAddOverlay(false); setAddUrlInput(''); setAddFiles([]); setAddUrls([]); }}>×</button>
             <p className="add-modal-heading">Keep building your document</p>
 
             <button className="add-choose-files-btn" onClick={() => document.getElementById('add-file-input').click()}>
@@ -436,7 +437,7 @@ export default function App() {
               <div className="add-file-chips">
                 {addFiles.map((f, i) => (
                   <span key={i} className="add-chip">
-                    <i className="ti ti-file" aria-hidden="true" style={{ fontSize: '12px' }} />
+                    <i className="ti ti-file" aria-hidden="true" />
                     <span className="chip-name">{f.name}</span>
                     <span className="add-chip-x" onClick={() => setAddFiles(prev => prev.filter((_, j) => j !== i))}>×</span>
                   </span>
@@ -466,15 +467,28 @@ export default function App() {
               value={addUrlInput}
               onChange={e => setAddUrlInput(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === 'Enter' && (addFiles.length > 0 || addUrlInput.trim())) {
-                  document.querySelector('.add-modal-confirm').click();
+                if (e.key === 'Enter' && addUrlInput.trim().startsWith('http')) {
+                  setAddUrls(prev => [...prev, addUrlInput.trim()]);
+                  setAddUrlInput('');
                 }
               }}
             />
 
+            {addUrls.length > 0 && (
+              <div className="add-file-chips" style={{ marginBottom: '1rem' }}>
+                {addUrls.map((url, i) => (
+                  <span key={i} className="add-chip">
+                    <i className="ti ti-link" aria-hidden="true" />
+                    <span className="chip-name">{url}</span>
+                    <span className="add-chip-x" onClick={() => setAddUrls(prev => prev.filter((_, j) => j !== i))}>×</span>
+                  </span>
+                ))}
+              </div>
+            )}
+
             <button
               className="add-modal-confirm"
-              disabled={addFiles.length === 0 && !addUrlInput.trim() || addingToDoc}
+              disabled={addFiles.length === 0 && addUrls.length === 0 || addingToDoc}
               onClick={async () => {
                 setAddingToDoc(true);
                 try {
@@ -482,11 +496,12 @@ export default function App() {
                     const { markdown: newMd, originalTokens, convertedTokens } = await convertFile(file);
                     handleAppend(newMd, originalTokens, convertedTokens, file.name);
                   }
-                  if (addUrlInput.trim()) {
-                    const { markdown: newMd, originalTokenEstimate, convertedTokenEstimate } = await urlToMarkdown(addUrlInput.trim());
-                    handleAppend(newMd, originalTokenEstimate, convertedTokenEstimate, addUrlInput.trim());
+                  for (const url of addUrls) {
+                    const { markdown: newMd, originalTokenEstimate, convertedTokenEstimate } = await urlToMarkdown(url);
+                    handleAppend(newMd, originalTokenEstimate, convertedTokenEstimate, url);
                   }
                   setAddFiles([]);
+                  setAddUrls([]);
                   setAddUrlInput('');
                   setShowAddOverlay(false);
                 } catch (err) {
