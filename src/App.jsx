@@ -164,6 +164,17 @@ export default function App() {
     return () => window.removeEventListener('popstate', onPop)
   }, [])
 
+  const [darkMode, setDarkMode] = useState(() => {
+    const saved = localStorage.getItem('td-theme')
+    if (saved) return saved === 'dark'
+    return window.matchMedia('(prefers-color-scheme: dark)').matches
+  })
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', darkMode ? 'dark' : 'light')
+    localStorage.setItem('td-theme', darkMode ? 'dark' : 'light')
+  }, [darkMode])
+
   const showError = useCallback((msg) => {
     setError(msg)
     clearTimeout(errorTimerRef.current)
@@ -356,7 +367,46 @@ export default function App() {
   return (
     <>
       <div className="dropzone-view">
-<div className="nav-bar" />
+<div className="nav-bar">
+  <button
+    onClick={() => setDarkMode(prev => !prev)}
+    aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+    style={{
+      background: 'none',
+      border: 'none',
+      cursor: 'pointer',
+      padding: '6px',
+      color: 'var(--accent)',
+      display: 'flex',
+      alignItems: 'center',
+      marginLeft: 'auto',
+    }}
+  >
+    {darkMode ? (
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <circle cx="9" cy="9" r="3.5" stroke="currentColor" strokeWidth="1.5"/>
+        <line x1="9" y1="1" x2="9" y2="3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+        <line x1="9" y1="15" x2="9" y2="17" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+        <line x1="1" y1="9" x2="3" y2="9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+        <line x1="15" y1="9" x2="17" y2="9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+        <line x1="3.05" y1="3.05" x2="4.46" y2="4.46" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+        <line x1="13.54" y1="13.54" x2="14.95" y2="14.95" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+        <line x1="14.95" y1="3.05" x2="13.54" y2="4.46" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+        <line x1="4.46" y1="13.54" x2="3.05" y2="14.95" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+      </svg>
+    ) : (
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs>
+          <mask id="moon-mask">
+            <rect width="20" height="20" fill="white"/>
+            <circle cx="13" cy="7" r="6" fill="black"/>
+          </mask>
+        </defs>
+        <circle cx="10" cy="10" r="7" fill="currentColor" mask="url(#moon-mask)"/>
+      </svg>
+    )}
+  </button>
+</div>
 <span className="app-title"><span style={{display:'flex', alignItems:'center', gap:'8px'}}>
   <svg width="22" height="22" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" style={{flexShrink:0}}>
     <rect width="48" height="48" rx="11" fill="#5f8c72"/>
