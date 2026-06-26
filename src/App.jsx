@@ -3,6 +3,7 @@ import './App.css'
 import { Analytics } from '@vercel/analytics/react'
 import mammoth from 'mammoth'
 import { pdfToMarkdown } from './pdfToMarkdown.js'
+import { urlToMarkdown } from './utils/urlToMarkdown'
 
 function formatBytes(bytes) {
   if (bytes < 1024) return bytes + ' B'
@@ -163,6 +164,9 @@ export default function App() {
     window.addEventListener('popstate', onPop)
     return () => window.removeEventListener('popstate', onPop)
   }, [])
+
+  const [mode, setMode] = useState('file') // 'file' or 'url'
+  const [urlInput, setUrlInput] = useState('')
 
   const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem('td-theme')
@@ -418,7 +422,56 @@ export default function App() {
   </span>
 </span></span><h1 className="hero-headline">Fewer tokens.<br /><em>Better results.</em></h1>
 <p className="hero-sub">Upload a PDF or Word doc and get back clean, AI-ready text in seconds.</p>
-        <div
+        <div className="mode-tabs">
+          <button
+            className={`mode-tab ${mode === 'file' ? 'active' : ''}`}
+            onClick={() => setMode('file')}
+          >
+            Upload File
+          </button>
+          <button
+            className={`mode-tab ${mode === 'url' ? 'active' : ''}`}
+            onClick={() => setMode('url')}
+          >
+            Paste URL
+          </button>
+        </div>
+
+        {mode === 'url' && (
+          <div className="url-input-wrapper">
+            <input
+              type="text"
+              className="url-input"
+              placeholder="https://..."
+              value={urlInput}
+              onChange={e => setUrlInput(e.target.value)}
+            />
+            <button
+              className="url-submit"
+              onClick={async () => {
+                if (!urlInput) return;
+                try {
+                  const { markdown, originalTokenEstimate, convertedTokenEstimate } = await urlToMarkdown(urlInput);
+                  setMarkdown(markdown);
+                  setTokenStats({
+                    original: originalTokenEstimate,
+                    converted: convertedTokenEstimate,
+                    saving: Math.max(0, Math.round((1 - convertedTokenEstimate / originalTokenEstimate) * 100)),
+                  });
+                  setFileName(urlInput);
+                  setView('editor');
+                } catch (err) {
+                  console.error(err);
+                  showError('Could not fetch or convert that URL.');
+                }
+              }}
+            >
+              Convert
+            </button>
+          </div>
+        )}
+
+        {mode === 'file' && <div
           className={`dropzone${dragOver ? ' drag-over' : ''}${loading ? ' loading' : ''}`}
           onDrop={handleDrop}
           onDragEnter={handleDragEnter}
@@ -454,7 +507,7 @@ export default function App() {
             style={{ display: 'none' }}
             onChange={handleFileInput}
           />
-        </div>
+        </div>}
         {error && <p className="error-message" role="alert">{error}</p>}
         <p className="pdf-warning">Works best with text-based PDFs. Tables, columns, and scanned pages may not convert well.</p>
       </div>
@@ -482,7 +535,45 @@ export default function App() {
           </div>
         </div>
       </section>
+      <section style={{padding:'3.5rem 2rem',background:'transparent'}}>
+  <p style={{fontSize:'11px',fontWeight:'500',letterSpacing:'0.08em',textTransform:'uppercase',color:'var(--text-secondary)',textAlign:'center',marginBottom:'0.6rem'}}>How it works</p>
+  <h2 style={{fontFamily:'Georgia,serif',fontSize:'26px',fontWeight:'400',color:'var(--text-primary)',textAlign:'center',marginBottom:'3rem',lineHeight:'1.3'}}>From file to AI-ready in seconds</h2>
+  <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'1.5rem',maxWidth:'860px',margin:'0 auto'}}>
+
+    <div style={{textAlign:'center',padding:'0 0.5rem',position:'relative'}}>
+      <div style={{width:'56px',height:'56px',borderRadius:'50%',background:'rgba(95,140,114,0.12)',border:'1px solid rgba(95,140,114,0.3)',display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 1rem',color:'#5f8c72',position:'relative'}}>
+        <span style={{position:'absolute',top:'-3px',right:'-3px',width:'17px',height:'17px',borderRadius:'50%',background:'#5f8c72',color:'#fff',fontSize:'9px',fontWeight:'600',display:'flex',alignItems:'center',justifyContent:'center'}}>1</span>
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/><polyline points="7 9 12 4 17 9"/><line x1="12" y1="4" x2="12" y2="16"/></svg>
+      </div>
+      <p style={{fontSize:'14px',fontWeight:'500',color:'var(--text-primary)',marginBottom:'6px'}}>Drop your file</p>
+      <p style={{fontSize:'13px',color:'var(--text-secondary)',lineHeight:'1.65'}}>Upload a PDF or Word doc. Drag and drop, or click to browse.</p>
+      <span style={{position:'absolute',right:'-14px',top:'26px',color:'var(--text-muted)',fontSize:'16px'}} aria-hidden="true">→</span>
+    </div>
+
+    <div style={{textAlign:'center',padding:'0 0.5rem',position:'relative'}}>
+      <div style={{width:'56px',height:'56px',borderRadius:'50%',background:'rgba(95,140,114,0.12)',border:'1px solid rgba(95,140,114,0.3)',display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 1rem',color:'#5f8c72',position:'relative'}}>
+        <span style={{position:'absolute',top:'-3px',right:'-3px',width:'17px',height:'17px',borderRadius:'50%',background:'#5f8c72',color:'#fff',fontSize:'9px',fontWeight:'600',display:'flex',alignItems:'center',justifyContent:'center'}}>2</span>
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+      </div>
+      <p style={{fontSize:'14px',fontWeight:'500',color:'var(--text-primary)',marginBottom:'6px'}}>Instant conversion</p>
+      <p style={{fontSize:'13px',color:'var(--text-secondary)',lineHeight:'1.65'}}>TokenDrop strips fonts, layout, and formatting — leaving only clean Markdown your AI can read directly.</p>
+      <span style={{position:'absolute',right:'-14px',top:'26px',color:'var(--text-muted)',fontSize:'16px'}} aria-hidden="true">→</span>
+    </div>
+
+    <div style={{textAlign:'center',padding:'0 0.5rem'}}>
+      <div style={{width:'56px',height:'56px',borderRadius:'50%',background:'rgba(95,140,114,0.12)',border:'1px solid rgba(95,140,114,0.3)',display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 1rem',color:'#5f8c72',position:'relative'}}>
+        <span style={{position:'absolute',top:'-3px',right:'-3px',width:'17px',height:'17px',borderRadius:'50%',background:'#5f8c72',color:'#fff',fontSize:'9px',fontWeight:'600',display:'flex',alignItems:'center',justifyContent:'center'}}>3</span>
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+      </div>
+      <p style={{fontSize:'14px',fontWeight:'500',color:'var(--text-primary)',marginBottom:'6px'}}>Copy and use</p>
+      <p style={{fontSize:'13px',color:'var(--text-secondary)',lineHeight:'1.65'}}>Paste straight into your AI tool. No clutter. No wasted tokens.</p>
+    </div>
+
+  </div>
+</section>
+      <hr style={{maxWidth:'860px',margin:'0 auto',border:'none',borderTop:'1px solid var(--border)'}}/>
       <PromptBlock />
+      <hr style={{maxWidth:'860px',margin:'0 auto',border:'none',borderTop:'1px solid var(--border)'}}/>
     <section className="faq-section">
         <p className="faq-label">Questions</p>
         <h2 className="faq-title">TokenDrop FAQs</h2>
