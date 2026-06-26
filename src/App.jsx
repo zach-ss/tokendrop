@@ -106,12 +106,12 @@ function PromptBlock() {
 
   return (
     <section className="prompt-block-section">
-      <h2>Make this a habit</h2>
-      <p>Add this to your AI's memory or custom instructions so it reminds you to run files through tokendrop before pasting them.</p>
+      <h2>Use it every time</h2>
+      <p>Copy this into your AI tool's memory or settings so it automatically prompts you to convert files with TokenDrop before every conversation.</p>
       <div className="prompt-block">
         <pre>{prompt}</pre>
         <button type="button" onClick={handleCopy}>
-          {copied ? 'Copied!' : 'Copy'}
+          {copied ? 'Copied!' : <><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{marginRight:'4px',verticalAlign:'middle'}}><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>Copy</>}
         </button>
       </div>
     </section>
@@ -357,8 +357,17 @@ export default function App() {
     <>
       <div className="dropzone-view">
 <div className="nav-bar" />
-<span className="app-title">Token<span className="logo-drop">Drop</span></span><h1 className="hero-headline">Fewer tokens.<br /><em>Better results.</em></h1>
-<p className="hero-sub">Convert your documents into clean markdown your AI can actually use efficiently.</p>
+<span className="app-title"><span style={{display:'flex', alignItems:'center', gap:'8px'}}>
+  <svg width="22" height="22" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" style={{flexShrink:0}}>
+    <rect width="48" height="48" rx="11" fill="#5f8c72"/>
+    <circle cx="24" cy="18" r="7" stroke="white" strokeWidth="4"/>
+    <circle cx="24" cy="30" r="7" fill="white"/>
+  </svg>
+  <span style={{display:'inline-flex', alignItems:'baseline', gap:'0px'}}>
+    <span className="logo-token">Token</span><span className="logo-drop" style={{verticalAlign:'baseline', display:'inline'}}>Drop</span>
+  </span>
+</span></span><h1 className="hero-headline">Fewer tokens.<br /><em>Better results.</em></h1>
+<p className="hero-sub">Upload a PDF or Word doc and get back clean, AI-ready text in seconds.</p>
         <div
           className={`dropzone${dragOver ? ' drag-over' : ''}${loading ? ' loading' : ''}`}
           onDrop={handleDrop}
@@ -379,9 +388,9 @@ export default function App() {
             </div>
           ) : (
             <>
-              <svg className="dropzone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M12 16V8m0 0-3 3m3-3 3 3" />
-                <path d="M20 16.5A4.5 4.5 0 0 0 15.5 12H14a6 6 0 1 0-11.8 1.5" />
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#5f8c72" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <rect x="3" y="3" width="18" height="18" rx="4"/>
+                <path d="M12 16V8m0 0l-3 3m3-3l3 3"/>
               </svg>
               <p className="dropzone-label">Drop your file here</p>
               <p className="dropzone-sub">or click to browse</p>
@@ -401,7 +410,7 @@ export default function App() {
       </div>
       <section className="edu-section">
         <p className="edu-intro">
-          Most documents aren't built for AI. They're built for printers. When you upload a PDF or Word file, the AI spends a significant chunk of its reading budget on fonts, layout data, and formatting it can't use. tokendrop converts your files to Markdown first, so the AI gets straight to the content that actually matters and you get more out of every session.
+          Most documents aren't built for AI. They're built for printers. When you upload a file, the AI wastes time processing fonts, page margins, and formatting it ignores entirely. TokenDrop converts your documents to Markdown — a simple, text-only format that AI reads directly — so the AI gets straight to your actual content. Sharper answers. Less wasted effort. Every session.
         </p>
         <div className="stat-cards">
           <div className="stat-card">

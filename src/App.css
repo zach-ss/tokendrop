@@ -5,10 +5,10 @@
 }
 
 :root {
---bg: #F7F7F4;
+--bg: #f5f5f2;
   --text: #111110;
-  --accent: #5C7A5C;
-  --accent-hover: #4a6349;
+  --accent: #5f8c72;
+  --accent-hover: #4d7460;
   --border: #E8E6E1;
   --error: #c0392b;
   --radius: 8px;
@@ -71,7 +71,7 @@ body {
 }
 
 .logo-drop {
-  border-bottom: 1.5px solid #5A7A5E;
+  border-bottom: 1.5px solid #5f8c72;
   padding-bottom: 0px;
 }
 .hero-headline {
@@ -103,7 +103,7 @@ body {
 .dropzone {
   width: 100%;
   max-width: 520px;
-  border: 1.5px solid rgba(17, 17, 16, 0.38);
+  border: 1.5px dashed #5f8c72;
   border-radius: var(--radius);
   padding: 4rem 2rem;
   display: flex;
@@ -112,7 +112,7 @@ body {
   gap: 1rem;
   cursor: pointer;
   transition: border-color 0.2s ease, background 0.2s ease;
-  background: transparent;
+  background: rgba(95, 140, 114, 0.09);
   outline: none;
   margin-left: auto;
   margin-right: auto;
@@ -125,7 +125,7 @@ body {
 
 .dropzone.drag-over {
   border-color: var(--accent);
-  background: rgba(92, 122, 92, 0.05);
+  background: rgba(95, 140, 114, 0.15);
 }
 
 .dropzone-icon {
@@ -136,11 +136,10 @@ body {
 }
 
 .dropzone-label {
-  font-size: 1.0625rem;
-  font-weight: 500;
-  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a18;
   text-align: center;
-  opacity: 0.85;
 }
 
 .dropzone-sub {
@@ -151,9 +150,8 @@ body {
 }
 
 .dropzone-hint {
-  font-size: 0.8125rem;
-  color: var(--text);
-  opacity: 0.5;
+  font-size: 12px;
+  color: #888;
   margin-top: 0.25rem;
 }
 
@@ -457,7 +455,7 @@ body {
   font-family: 'Inter', sans-serif;
   font-size: 2.2rem;
   font-weight: 700;
-  color: #5C7A5C;
+  color: #5f8c72;
   letter-spacing: -0.03em;
   line-height: 1.1;
   margin-bottom: 14px;
@@ -507,7 +505,7 @@ body {
 }
 
 .footer-links a:hover {
-  color: #5A7A5E;
+  color: #5f8c72;
 }
 
 /* Mobile */
@@ -560,17 +558,17 @@ body {
 
 .prompt-block {
   position: relative;
-  background: #1E211E;
-  border: 1px solid #2E372E;
+  background: #e8eeea;
+  border: 1px solid #a8bfb2;
   border-radius: 8px;
   padding: 20px 90px 20px 24px;
 }
 
 .prompt-block pre {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Courier New', Courier, monospace;
   font-size: 13px;
   line-height: 1.6;
-  color: #C8C8C2;
+  color: #1a2e20;
   white-space: nowrap;
   overflow-x: auto;
   overflow: hidden;
@@ -583,17 +581,17 @@ body {
   top: 16px;
   right: 16px;
   background: transparent;
-  border: 1px solid #5C7A5C;
-  color: #5C7A5C;
+  border: 1px solid #8aaa96;
+  color: #1a1a1a;
   font-size: 12px;
-  padding: 4px 12px;
-  border-radius: 4px;
+  padding: 4px 9px;
+  border-radius: 5px;
   cursor: pointer;
-  transition: border-color 0.15s ease, color 0.15s ease;
+  transition: color 0.15s ease;
 }
 
 .prompt-block button:hover {
-  background: #5C7A5C;
+  background: #5f8c72;
   color: #F9F9F7;
 }
 /* ── FAQ ── */
@@ -644,7 +642,7 @@ body {
 }
 
 .faq-plus {
-  color: #5A7A5E;
+  color: #5f8c72;
   font-size: 1.25rem;
   font-weight: 300;
   flex-shrink: 0;
