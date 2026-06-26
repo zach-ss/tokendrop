@@ -813,7 +813,7 @@ body {
 .add-modal-scrim {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.35);
+  background: rgba(0, 0, 0, 0.45);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -821,48 +821,57 @@ body {
 }
 
 .add-modal-card {
-  background: var(--surface);
+  background: var(--bg);
   border: 0.5px solid var(--border);
-  border-radius: 14px;
+  border-radius: 16px;
   padding: 2rem;
-  width: 420px;
-  max-width: 90vw;
+  width: 440px;
+  max-width: 92vw;
   position: relative;
   font-family: inherit;
   box-sizing: border-box;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.18);
 }
 
 .add-modal-close {
   position: absolute;
-  top: 14px;
-  right: 16px;
-  background: none;
-  border: none;
+  top: 1.25rem;
+  right: 1.25rem;
+  background: var(--surface);
+  border: 0.5px solid var(--border);
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: var(--text-secondary);
-  font-size: 20px;
+  font-size: 16px;
   cursor: pointer;
   line-height: 1;
   padding: 0;
-  font-family: inherit;
+  transition: background 0.15s, color 0.15s;
 }
 
 .add-modal-close:hover {
+  background: var(--border);
   color: var(--text-primary);
 }
 
 .add-modal-heading {
   font-family: Georgia, serif;
-  font-size: 17px;
+  font-size: 18px;
   font-weight: normal;
   color: var(--text-primary);
-  margin: 0 0 1.25rem 0;
+  margin: 0 0 1.5rem 0;
+  padding-right: 2rem;
 }
 
 .add-choose-files-btn {
   width: 100%;
-  padding: 11px 16px;
+  padding: 14px 16px;
   border: 1.5px dashed var(--border-strong);
-  border-radius: 8px;
+  border-radius: 10px;
   background: var(--surface);
   color: var(--text-secondary);
   font-size: 13px;
@@ -872,98 +881,111 @@ body {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  transition: border-color 0.15s, color 0.15s;
-  margin-bottom: 10px;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
   box-sizing: border-box;
+  margin-bottom: 0;
 }
 
 .add-choose-files-btn:hover {
   border-color: var(--accent);
   color: var(--accent);
+  background: rgba(95, 140, 114, 0.05);
 }
 
 .add-file-chips {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 6px;
-  margin-bottom: 10px;
+  margin-top: 10px;
   width: 100%;
   box-sizing: border-box;
 }
 
 .add-chip {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 5px;
-  background: rgba(95, 140, 114, 0.1);
-  border: 1px solid rgba(95, 140, 114, 0.3);
-  border-radius: 6px;
-  padding: 4px 8px;
-  font-size: 12px;
-  color: var(--accent);
-  max-width: 100%;
+  gap: 8px;
+  background: var(--surface);
+  border: 0.5px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 12.5px;
+  color: var(--text-primary);
+  width: 100%;
   box-sizing: border-box;
   min-width: 0;
 }
 
-.add-chip span:nth-child(2) {
+.add-chip i {
+  color: var(--accent);
+  flex-shrink: 0;
+  font-size: 14px;
+}
+
+.add-chip span.chip-name {
+  flex: 1;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 200px;
   min-width: 0;
+  color: var(--text-primary);
 }
 
 .add-chip-x {
   cursor: pointer;
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1;
-  opacity: 0.7;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  margin-left: auto;
+  padding-left: 4px;
+  transition: color 0.15s;
 }
 
 .add-chip-x:hover {
-  opacity: 1;
+  color: var(--text-primary);
 }
 
 .add-modal-divider {
   border: none;
-  border-top: 0.5px solid var(--border-strong);
-  margin: 1.25rem 0;
+  border-top: 0.5px solid var(--border);
+  margin: 1.5rem 0;
 }
 
 .add-url-label {
   font-size: 12px;
   color: var(--text-muted);
-  margin-bottom: 6px;
+  margin: 0 0 8px 0;
+  letter-spacing: 0.03em;
 }
 
 .add-modal-url-input {
   width: 100%;
-  padding: 10px 12px;
-  font-size: 13px;
-  border: 1.5px solid var(--border);
-  border-radius: 8px;
+  padding: 11px 14px;
+  font-size: 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
   background: var(--surface);
   color: var(--text-primary);
   font-family: inherit;
   outline: none;
   box-sizing: border-box;
   transition: border-color 0.15s;
-  margin-bottom: 1.25rem;
+  margin-bottom: 1.5rem;
 }
 
 .add-modal-url-input:focus {
   border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(95, 140, 114, 0.12);
 }
-
 
 .add-modal-confirm {
   width: 100%;
-  padding: 12px;
+  padding: 13px;
   background: var(--accent);
   color: #fff;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   font-size: 14px;
   font-weight: 600;
   font-family: inherit;
@@ -972,6 +994,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 6px;
+  letter-spacing: 0.01em;
 }
 
 .add-modal-confirm:hover:not(:disabled) {
@@ -979,8 +1003,13 @@ body {
 }
 
 .add-modal-confirm:disabled {
-  opacity: 0.4;
+  opacity: 0.35;
   cursor: not-allowed;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 .add-modal-confirm .ti-loader-2 {

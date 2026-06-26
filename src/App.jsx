@@ -437,7 +437,7 @@ export default function App() {
                 {addFiles.map((f, i) => (
                   <span key={i} className="add-chip">
                     <i className="ti ti-file" aria-hidden="true" style={{ fontSize: '12px' }} />
-                    {f.name}
+                    <span className="chip-name">{f.name}</span>
                     <span className="add-chip-x" onClick={() => setAddFiles(prev => prev.filter((_, j) => j !== i))}>×</span>
                   </span>
                 ))}
