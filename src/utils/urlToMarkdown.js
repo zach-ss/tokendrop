@@ -33,7 +33,7 @@ export async function urlToMarkdown(url) {
 
   return {
     markdown,
-    originalTokenEstimate: Math.round(plainText.length / 4),
+    originalTokenEstimate: Math.round(rawHtml.length / 6),
     convertedTokenEstimate: Math.min(
       Math.round(markdownForCounting.length / 4),
       Math.round(plainText.length / 4)
