@@ -422,7 +422,7 @@ export default function App() {
     <span className="logo-token">Token</span><span className="logo-drop" style={{verticalAlign:'baseline', display:'inline'}}>Drop</span>
   </span>
 </span></span><h1 className="hero-headline">Fewer tokens.<br /><em>Better results.</em></h1>
-<p className="hero-sub">Upload a PDF or Word doc and get back clean, AI-ready text in seconds.</p>
+<p className="hero-sub">Upload a file or paste a URL and get back clean, AI-ready text in seconds.</p>
         <div className="mode-tabs">
           <button
             className={`mode-tab ${mode === 'file' ? 'active' : ''}`}
@@ -510,7 +510,7 @@ export default function App() {
           />
         </div>}
         {error && <p className="error-message" role="alert">{error}</p>}
-        <p className="pdf-warning">Works best with text-based PDFs. Tables, columns, and scanned pages may not convert well.</p>
+        <p className="pdf-warning">Works best with text-based PDFs and standard web pages. Tables, columns, scanned pages, and paywalled sites may not convert well.</p>
       </div>
       <section className="edu-section">
         <p className="edu-intro">
