@@ -799,50 +799,42 @@ body {
   opacity: 0.88;
 }
 
-.btn-add-to-doc {
-  display: inline-flex;
-  align-items: center;
-  padding: 9px 18px;
-  background: var(--surface);
+.action-btn-outline-sage {
+  background: transparent;
   color: var(--accent);
   border: 1.5px solid var(--accent);
-  border-radius: 8px;
-  font-size: 0.9rem;
-  font-family: inherit;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s;
 }
 
-.btn-add-to-doc:hover {
+.action-btn-outline-sage:hover {
   background: var(--accent);
   color: #fff;
 }
 
-.add-overlay-scrim {
-  position: absolute;
+.add-modal-scrim {
+  position: fixed;
   inset: 0;
-  background: rgba(95, 140, 114, 0.13);
-  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.35);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 10;
+  z-index: 100;
 }
 
-.add-overlay-card {
+.add-modal-card {
   background: var(--surface);
   border: 0.5px solid var(--border);
-  border-radius: 12px;
-  padding: 1.5rem;
-  width: 340px;
+  border-radius: 14px;
+  padding: 1.75rem 1.5rem 1.5rem;
+  width: 400px;
+  max-width: 90vw;
   position: relative;
+  font-family: inherit;
 }
 
-.add-overlay-close {
+.add-modal-close {
   position: absolute;
-  top: 12px;
-  right: 14px;
+  top: 14px;
+  right: 16px;
   background: none;
   border: none;
   color: var(--text-secondary);
@@ -853,78 +845,129 @@ body {
   font-family: inherit;
 }
 
-.add-overlay-close:hover {
+.add-modal-close:hover {
   color: var(--text-primary);
 }
 
-.add-overlay-heading {
+.add-modal-heading {
   font-family: Georgia, serif;
-  font-size: 16px;
+  font-size: 17px;
   font-weight: normal;
   color: var(--text-primary);
   margin: 0 0 1.25rem 0;
 }
 
-.add-tile-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-
-.add-tile {
-  border: 1.5px solid var(--border);
-  border-radius: 10px;
-  padding: 1.1rem 0.75rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
+.add-choose-files-btn {
+  width: 100%;
+  padding: 11px 16px;
+  border: 1.5px dashed var(--border);
+  border-radius: 8px;
   background: var(--surface);
-  transition: border-color 0.15s;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: border-color 0.15s, color 0.15s;
+  margin-bottom: 10px;
+  box-sizing: border-box;
 }
 
-.add-tile:hover {
+.add-choose-files-btn:hover {
   border-color: var(--accent);
-}
-
-.add-tile i {
-  font-size: 22px;
   color: var(--accent);
 }
 
-.add-tile-label {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text-primary);
-  text-align: center;
+.add-file-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
 }
 
-.add-url-input {
-  flex: 1;
-  padding: 9px 12px;
+.add-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(95, 140, 114, 0.1);
+  border: 1px solid rgba(95, 140, 114, 0.3);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 12px;
+  color: var(--accent);
+}
+
+.add-chip-x {
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  opacity: 0.7;
+}
+
+.add-chip-x:hover {
+  opacity: 1;
+}
+
+.add-modal-divider {
+  border: none;
+  border-top: 0.5px solid var(--border);
+  margin: 1rem 0;
+}
+
+.add-url-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.add-modal-url-input {
+  width: 100%;
+  padding: 10px 12px;
   font-size: 13px;
-  border: 1.5px solid var(--accent);
+  border: 1.5px solid var(--border);
   border-radius: 8px;
   background: var(--surface);
   color: var(--text-primary);
   font-family: inherit;
   outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.15s;
+  margin-bottom: 1.25rem;
 }
 
-.add-url-submit {
-  padding: 9px 16px;
+.add-modal-url-input:focus {
+  border-color: var(--accent);
+}
+
+.add-modal-confirm {
+  width: 100%;
+  padding: 12px;
   background: var(--accent);
   color: #fff;
   border: none;
   border-radius: 8px;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
   font-family: inherit;
-  white-space: nowrap;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.add-url-submit:hover {
+.add-modal-confirm:hover:not(:disabled) {
   opacity: 0.88;
+}
+
+.add-modal-confirm:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.add-modal-confirm .ti-loader-2 {
+  animation: spin 0.8s linear infinite;
 }

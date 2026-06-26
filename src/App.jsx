@@ -211,6 +211,8 @@ export default function App() {
   const [urlInput, setUrlInput] = useState('')
   const [showAddOverlay, setShowAddOverlay] = useState(false)
   const [addUrlInput, setAddUrlInput] = useState('')
+  const [addFiles, setAddFiles] = useState([])
+  const [addingToDoc, setAddingToDoc] = useState(false)
 
   const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem('td-theme')
@@ -313,6 +315,24 @@ export default function App() {
     e.target.value = ''
   }, [processFile])
 
+  const handleUrlConvert = useCallback(async () => {
+    if (!urlInput) return
+    try {
+      const { markdown: md, originalTokenEstimate, convertedTokenEstimate } = await urlToMarkdown(urlInput)
+      setMarkdown(md)
+      setTokenStats({
+        original: originalTokenEstimate,
+        converted: convertedTokenEstimate,
+        saving: Math.max(0, Math.round((1 - convertedTokenEstimate / originalTokenEstimate) * 100)),
+      })
+      setFileName(urlInput)
+      setView('editor')
+    } catch (err) {
+      console.error(err)
+      showError('Could not fetch or convert that URL.')
+    }
+  }, [urlInput, showError])
+
   const handleCopy = useCallback(() => {
     navigator.clipboard.writeText(markdown).then(() => {
       setCopied(true)
@@ -362,13 +382,7 @@ export default function App() {
           {scanned && <p className="scanned-warning">This PDF appears to be scanned. Text extraction may be incomplete.</p>}
           <hr className="divider" />
           <div className="actions">
-            <button
-              className="btn-add-to-doc"
-              onClick={() => {
-                accumulatedMarkdownRef.current = accumulatedMarkdownRef.current || markdown;
-                setShowAddOverlay(true);
-              }}
-            >
+            <button className="btn action-btn-outline-sage" onClick={() => { accumulatedMarkdownRef.current = accumulatedMarkdownRef.current || markdown; setShowAddOverlay(true); }}>
               <i className="ti ti-plus" aria-hidden="true" style={{ fontSize: '14px', verticalAlign: '-1px', marginRight: '5px' }} />
               Add to document
             </button>
@@ -384,69 +398,82 @@ export default function App() {
           </div>
           {showAddOverlay && (
             <div
-              className="add-overlay-scrim"
+              className="add-modal-scrim"
               onClick={(e) => { if (e.target === e.currentTarget) setShowAddOverlay(false); }}
             >
-              <div className="add-overlay-card">
-                <button className="add-overlay-close" onClick={() => setShowAddOverlay(false)}>×</button>
-                <p className="add-overlay-heading">Keep building your document</p>
-                <div className="add-tile-row">
-                  <div
-                    className="add-tile"
-                    onClick={() => document.getElementById('add-file-input').click()}
-                  >
-                    <i className="ti ti-upload" aria-hidden="true" />
-                    <span className="add-tile-label">Upload files</span>
+              <div className="add-modal-card">
+                <button className="add-modal-close" onClick={() => { setShowAddOverlay(false); setAddUrlInput(''); setAddFiles([]); }}>×</button>
+                <p className="add-modal-heading">Keep building your document</p>
+
+                <button className="add-choose-files-btn" onClick={() => document.getElementById('add-file-input').click()}>
+                  <i className="ti ti-upload" aria-hidden="true" style={{ fontSize: '16px' }} />
+                  Choose files
+                </button>
+
+                {addFiles.length > 0 && (
+                  <div className="add-file-chips">
+                    {addFiles.map((f, i) => (
+                      <span key={i} className="add-chip">
+                        <i className="ti ti-file" aria-hidden="true" style={{ fontSize: '12px' }} />
+                        {f.name}
+                        <span className="add-chip-x" onClick={() => setAddFiles(prev => prev.filter((_, j) => j !== i))}>×</span>
+                      </span>
+                    ))}
                   </div>
-                  <div
-                    className="add-tile"
-                    onClick={() => document.getElementById('add-url-row').style.display = 'flex'}
-                  >
-                    <i className="ti ti-link" aria-hidden="true" />
-                    <span className="add-tile-label">Paste a URL</span>
-                  </div>
-                </div>
-                <div id="add-url-row" style={{ display: 'none', marginTop: '1rem', gap: '8px' }}>
-                  <input
-                    type="text"
-                    className="add-url-input"
-                    placeholder="https://..."
-                    value={addUrlInput}
-                    onChange={e => setAddUrlInput(e.target.value)}
-                  />
-                  <button
-                    className="add-url-submit"
-                    onClick={async () => {
-                      if (!addUrlInput) return;
-                      try {
-                        const { markdown: newMd, originalTokenEstimate, convertedTokenEstimate } = await urlToMarkdown(addUrlInput);
-                        handleAppend(newMd, originalTokenEstimate, convertedTokenEstimate, addUrlInput);
-                      } catch (err) {
-                        console.error(err);
-                      }
-                    }}
-                  >
-                    Add
-                  </button>
-                </div>
+                )}
+
                 <input
                   id="add-file-input"
                   type="file"
                   multiple
                   accept=".pdf,.docx"
                   style={{ display: 'none' }}
-                  onChange={async (e) => {
-                    const files = Array.from(e.target.files);
-                    for (const file of files) {
-                      try {
-                        const { markdown: newMd, originalTokens, convertedTokens } = await convertFile(file);
-                        handleAppend(newMd, originalTokens, convertedTokens, file.name);
-                      } catch (err) {
-                        console.error(err);
-                      }
-                    }
+                  onChange={(e) => {
+                    setAddFiles(prev => [...prev, ...Array.from(e.target.files)]);
+                    e.target.value = '';
                   }}
                 />
+
+                <hr className="add-modal-divider" />
+
+                <p className="add-url-label">Or paste a URL</p>
+                <input
+                  type="text"
+                  className="add-modal-url-input"
+                  placeholder="https://..."
+                  value={addUrlInput}
+                  onChange={e => setAddUrlInput(e.target.value)}
+                />
+
+                <button
+                  className="add-modal-confirm"
+                  disabled={addFiles.length === 0 && !addUrlInput.trim() || addingToDoc}
+                  onClick={async () => {
+                    setAddingToDoc(true);
+                    try {
+                      for (const file of addFiles) {
+                        const { markdown: newMd, originalTokens, convertedTokens } = await convertFile(file);
+                        handleAppend(newMd, originalTokens, convertedTokens, file.name);
+                      }
+                      if (addUrlInput.trim()) {
+                        const { markdown: newMd, originalTokenEstimate, convertedTokenEstimate } = await urlToMarkdown(addUrlInput.trim());
+                        handleAppend(newMd, originalTokenEstimate, convertedTokenEstimate, addUrlInput.trim());
+                      }
+                      setAddFiles([]);
+                      setAddUrlInput('');
+                      setShowAddOverlay(false);
+                    } catch (err) {
+                      console.error(err);
+                    } finally {
+                      setAddingToDoc(false);
+                    }
+                  }}
+                >
+                  {addingToDoc
+                    ? <><i className="ti ti-loader-2" aria-hidden="true" style={{ fontSize: '15px', marginRight: '6px', verticalAlign: '-2px' }} />Adding...</>
+                    : 'Add to document'
+                  }
+                </button>
               </div>
             </div>
           )}
@@ -551,26 +578,11 @@ export default function App() {
               placeholder="https://..."
               value={urlInput}
               onChange={e => setUrlInput(e.target.value)}
+              onKeyDown={async (e) => { if (e.key === 'Enter') await handleUrlConvert(); }}
             />
             <button
               className="url-submit"
-              onClick={async () => {
-                if (!urlInput) return;
-                try {
-                  const { markdown, originalTokenEstimate, convertedTokenEstimate } = await urlToMarkdown(urlInput);
-                  setMarkdown(markdown);
-                  setTokenStats({
-                    original: originalTokenEstimate,
-                    converted: convertedTokenEstimate,
-                    saving: Math.max(0, Math.round((1 - convertedTokenEstimate / originalTokenEstimate) * 100)),
-                  });
-                  setFileName(urlInput);
-                  setView('editor');
-                } catch (err) {
-                  console.error(err);
-                  showError('Could not fetch or convert that URL.');
-                }
-              }}
+              onClick={handleUrlConvert}
             >
               Convert
             </button>
