@@ -28,6 +28,9 @@ export async function urlToMarkdown(url) {
   return {
     markdown,
     originalTokenEstimate: Math.round(plainText.length / 4),
-    convertedTokenEstimate: Math.round(markdown.length / 4),
+    convertedTokenEstimate: Math.min(
+      Math.round(markdown.length / 4),
+      Math.round(plainText.length / 4)
+    ),
   };
 }
