@@ -30,6 +30,9 @@ export default function Terms() {
         <h2>Changes</h2>
         <p>TokenDrop is a free personal project and may be modified, suspended, or discontinued at any time without notice. These Terms may be updated from time to time. The date at the top of this page reflects the most recent version.</p>
 
+        <h2>Your content and responsibility</h2>
+        <p>You are responsible for ensuring you have the right to access and process any content you submit to TokenDrop, including content retrieved via URL. TokenDrop fetches and converts content solely at your direction and does not store, reproduce, or redistribute that content beyond your session. Nothing in these Terms limits any rights you may have under the Australian Consumer Law.</p>
+
         <h2>Governing law</h2>
         <p>These Terms are governed by the laws of New South Wales, Australia.</p>
       </div>

@@ -214,6 +214,7 @@ export default function App() {
   const [addFiles, setAddFiles] = useState([])
   const [addUrls, setAddUrls] = useState([])
   const [addingToDoc, setAddingToDoc] = useState(false)
+  const [conversionError, setConversionError] = useState('')
 
   const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem('td-theme')
@@ -318,6 +319,7 @@ export default function App() {
 
   const handleUrlConvert = useCallback(async () => {
     if (!urlInput) return
+    setConversionError('')
     try {
       const { markdown: md, originalTokenEstimate, convertedTokenEstimate } = await urlToMarkdown(urlInput)
       setMarkdown(md)
@@ -330,9 +332,13 @@ export default function App() {
       setView('editor')
     } catch (err) {
       console.error(err)
-      showError('Could not fetch or convert that URL.')
+      if (err.message === 'PAYWALL') {
+        setConversionError("We couldn't retrieve this page — it may be behind a login or paywall. Try saving the page as a PDF and uploading it instead.")
+      } else {
+        setConversionError('Something went wrong fetching this URL. Please check the address and try again.')
+      }
     }
-  }, [urlInput, showError])
+  }, [urlInput])
 
   const handleCopy = useCallback(() => {
     navigator.clipboard.writeText(markdown).then(() => {
@@ -491,6 +497,7 @@ export default function App() {
               disabled={addFiles.length === 0 && addUrls.length === 0 || addingToDoc}
               onClick={async () => {
                 setAddingToDoc(true);
+                setConversionError('');
                 try {
                   for (const file of addFiles) {
                     const { markdown: newMd, originalTokens, convertedTokens } = await convertFile(file);
@@ -506,6 +513,11 @@ export default function App() {
                   setShowAddOverlay(false);
                 } catch (err) {
                   console.error(err);
+                  if (err.message === 'PAYWALL') {
+                    setConversionError("We couldn't retrieve this page — it may be behind a login or paywall. Try saving the page as a PDF and uploading it instead.");
+                  } else {
+                    setConversionError('Something went wrong fetching this URL. Please check the address and try again.');
+                  }
                 } finally {
                   setAddingToDoc(false);
                 }
@@ -593,6 +605,7 @@ export default function App() {
         </div>
 
         {mode === 'url' && (
+          <>
           <div className="url-input-wrapper">
             <input
               type="text"
@@ -609,6 +622,10 @@ export default function App() {
               Convert
             </button>
           </div>
+          {conversionError && (
+            <p className="url-error">{conversionError}</p>
+          )}
+          </>
         )}
 
         {mode === 'file' && <div
@@ -685,8 +702,8 @@ export default function App() {
         <span style={{position:'absolute',top:'-3px',right:'-3px',width:'17px',height:'17px',borderRadius:'50%',background:'#5f8c72',color:'#fff',fontSize:'9px',fontWeight:'600',display:'flex',alignItems:'center',justifyContent:'center'}}>1</span>
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/><polyline points="7 9 12 4 17 9"/><line x1="12" y1="4" x2="12" y2="16"/></svg>
       </div>
-      <p style={{fontSize:'14px',fontWeight:'500',color:'var(--text-primary)',marginBottom:'6px'}}>Drop your file</p>
-      <p style={{fontSize:'13px',color:'var(--text-secondary)',lineHeight:'1.65'}}>Upload a PDF or Word doc. Drag and drop, or click to browse.</p>
+      <p style={{fontSize:'14px',fontWeight:'500',color:'var(--text-primary)',marginBottom:'6px'}}>Drop a file or URL</p>
+      <p style={{fontSize:'13px',color:'var(--text-secondary)',lineHeight:'1.65'}}>Upload a PDF, Word doc, or paste any web address.</p>
       <span style={{position:'absolute',right:'-14px',top:'26px',color:'var(--text-muted)',fontSize:'16px'}} aria-hidden="true">→</span>
     </div>
 
@@ -723,7 +740,9 @@ export default function App() {
           { q: "How does it work?", a: "Upload your PDF or DOCX file and TokenDrop instantly converts it to markdown in your browser. Preview and edit the result, then copy or download it." },
           { q: "What is markdown, exactly?", a: "A simple plain-text format that uses minimal characters to convey structure. No hidden metadata or formatting overhead — just content." },
           { q: "Why does markdown use fewer tokens?", a: "PDFs and DOCX files carry invisible formatting data, layout instructions, and encoding overhead that all count toward your token limit. Markdown strips all of that out." },
-          { q: "What file types does TokenDrop support?", a: "Currently PDF (text-based, not scanned) and DOCX. More formats are on the roadmap." },
+          { q: "What file types does TokenDrop support?", a: "TokenDrop currently supports PDF and Word (.docx) files, plus any publicly accessible URL." },
+          { q: "Does TokenDrop work with web pages?", a: "Yes. Paste any URL into the URL tab and TokenDrop will fetch the page and convert it to clean Markdown. Works best with static pages like articles, documentation, and case law. Paywalled or login-protected pages cannot be retrieved." },
+          { q: "Can I combine multiple files and URLs into one document?", a: "Yes. After your first conversion, click \"Add to document\" to add more files or URLs to the same Markdown output. You can mix files and URLs freely. When you're done, copy or download the full compiled document." },
           { q: "Is my data safe?", a: "Yes. Everything is processed directly in your browser. Your files are never uploaded to a server or stored anywhere." },
           { q: "Does it cost anything?", a: "No. TokenDrop is completely free with no account required." },
           { q: "Who is it for?", a: "Anyone who uses AI tools regularly — law students, researchers, analysts, writers, developers — and wants to get more out of every conversation without hitting token limits." },

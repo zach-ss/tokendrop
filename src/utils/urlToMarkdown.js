@@ -10,6 +10,18 @@ export async function urlToMarkdown(url) {
 
   const rawHtml = data.html;
 
+  const paywallPatterns = [
+    /subscribe to (read|continue|access)/i,
+    /paywall/i,
+    /sign in to read/i,
+    /create an account to continue/i,
+    /access denied/i,
+    /subscribe for (full|unlimited) access/i,
+  ];
+  if (paywallPatterns.some(re => re.test(rawHtml))) {
+    throw new Error('PAYWALL');
+  }
+
   // Extract plain text for token baseline (Option B)
   const tempDiv = document.createElement('div');
   tempDiv.innerHTML = rawHtml;
