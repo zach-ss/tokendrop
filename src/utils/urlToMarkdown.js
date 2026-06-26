@@ -25,11 +25,17 @@ export async function urlToMarkdown(url) {
   const turndown = new TurndownService({ headingStyle: 'atx', bulletListMarker: '-' });
   const markdown = turndown.turndown(tempDiv.innerHTML);
 
+  // Strip URLs from markdown for token counting only (link text stays, URLs removed)
+  const markdownForCounting = markdown
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')  // [text](url) → text
+    .replace(/!\[([^\]]*)\]\([^)]*\)/g, '$1') // ![alt](url) → alt
+    .replace(/<https?:\/\/[^>]+>/g, '');       // <url> → removed
+
   return {
     markdown,
     originalTokenEstimate: Math.round(plainText.length / 4),
     convertedTokenEstimate: Math.min(
-      Math.round(markdown.length / 4),
+      Math.round(markdownForCounting.length / 4),
       Math.round(plainText.length / 4)
     ),
   };
