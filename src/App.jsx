@@ -267,6 +267,7 @@ export default function App() {
             : 'PDF converted but no readable text was found.'
           )
         }
+        window.gtag('event', 'document_converted')
         setView('editor')
       })
       .catch(() => {
@@ -329,6 +330,7 @@ export default function App() {
         saving: Math.max(0, Math.round((1 - convertedTokenEstimate / originalTokenEstimate) * 100)),
       })
       setFileName(urlInput)
+      window.gtag('event', 'document_converted')
       setView('editor')
     } catch (err) {
       console.error(err)
