@@ -9,10 +9,10 @@ export default function Terms() {
         <p>By using TokenDrop (tokendrop.tech) you agree to these Terms. If you do not agree, please do not use the tool.</p>
 
         <h2>About the service</h2>
-        <p>TokenDrop is a free, browser-based tool that converts PDF and DOCX files into Markdown format. All file processing happens locally in your browser. No files or data are sent to any server.</p>
+        <p>TokenDrop is a free, browser-based tool that converts PDF and DOCX files and web page URLs into Markdown format. File processing happens entirely in your browser and no uploaded files are sent to any server. When converting a URL, TokenDrop's server fetches the requested page on your behalf; that content is not stored or retained.</p>
 
         <h2>No warranty</h2>
-        <p>TokenDrop is provided free of charge and on an "as is" basis. While every effort is made to produce accurate Markdown output, no guarantee is made that conversions will be complete, accurate, or suitable for any particular purpose. Scanned PDFs, complex layouts, and certain formatting may not convert correctly. You are responsible for reviewing all output before use.</p>
+        <p>TokenDrop is provided free of charge and on an "as is" basis. While every effort is made to produce accurate Markdown output, no guarantee is made that conversions will be complete, accurate, or suitable for any particular purpose. Scanned PDFs, complex layouts, certain formatting, and some web pages may not convert correctly. You are responsible for reviewing all output before use.</p>
         <p>Nothing in these Terms excludes, restricts, or modifies any right or remedy, or any guarantee, warranty, or other term or condition, implied or imposed by the Australian Consumer Law that cannot lawfully be excluded or limited.</p>
 
         <h2>Your content and responsibility</h2>
