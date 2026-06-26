@@ -6,14 +6,15 @@ export default function Privacy() {
         <p className="legal-date">Last updated: June 2026</p>
 
        <h2>Who we are</h2>
-        <p>TokenDrop is a free browser-based tool that converts PDF and DOCX files into Markdown format. All file processing happens locally in your browser. Nothing you upload ever leaves your device.</p>
+        <p>TokenDrop converts PDF files, Word documents, and web page URLs into clean Markdown text. File processing happens locally in your browser. Nothing you upload ever leaves your device.</p>
 
         <h2>What information we collect</h2>
         <p>TokenDrop itself collects no personal information from you. No account is required to use the tool.</p>
         <p>This website uses Vercel Analytics, a third-party service provided by Vercel Inc. Vercel Analytics collects anonymised, aggregated data about how visitors use the site. This may include your general location (country level), device type, browser type, and pages visited. This data does not identify you personally and is used solely to understand how the site is being used so it can be improved. You can read Vercel's privacy policy at vercel.com/legal/privacy-policy.</p>
 
         <h2>Your files</h2>
-        <p>When you upload a file to TokenDrop, it is processed entirely within your browser using client-side JavaScript. The file is never sent to any server. TokenDrop has no ability to read, access, or store the contents of your documents. Once you close or refresh the page, all data is discarded automatically.</p>
+        <p>Files you upload are processed entirely within your browser using client-side libraries. They are never transmitted to any server.</p>
+        <p>When you convert a URL, TokenDrop's server fetches the requested page on your behalf in order to bypass browser security restrictions. The content of that page is returned to your browser for conversion and is not stored, logged, or retained by TokenDrop in any way.</p>
 
         <h2>Cookies</h2>
         <p>TokenDrop does not use cookies. Vercel Analytics may use limited technical identifiers to distinguish unique visits. These are anonymised and do not track you across other websites.</p>
