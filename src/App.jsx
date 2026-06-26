@@ -372,6 +372,7 @@ export default function App() {
 
   if (view === 'editor') {
     return (
+      <>
       <div className="editor-view">
         <aside className="left-panel">
           <div className="file-meta">
@@ -396,87 +397,6 @@ export default function App() {
               Convert Another
             </button>
           </div>
-          {showAddOverlay && (
-            <div
-              className="add-modal-scrim"
-              onClick={(e) => { if (e.target === e.currentTarget) setShowAddOverlay(false); }}
-            >
-              <div className="add-modal-card">
-                <button className="add-modal-close" onClick={() => { setShowAddOverlay(false); setAddUrlInput(''); setAddFiles([]); }}>×</button>
-                <p className="add-modal-heading">Keep building your document</p>
-
-                <button className="add-choose-files-btn" onClick={() => document.getElementById('add-file-input').click()}>
-                  <i className="ti ti-upload" aria-hidden="true" style={{ fontSize: '16px' }} />
-                  Choose files
-                </button>
-
-                {addFiles.length > 0 && (
-                  <div className="add-file-chips">
-                    {addFiles.map((f, i) => (
-                      <span key={i} className="add-chip">
-                        <i className="ti ti-file" aria-hidden="true" style={{ fontSize: '12px' }} />
-                        {f.name}
-                        <span className="add-chip-x" onClick={() => setAddFiles(prev => prev.filter((_, j) => j !== i))}>×</span>
-                      </span>
-                    ))}
-                  </div>
-                )}
-
-                <input
-                  id="add-file-input"
-                  type="file"
-                  multiple
-                  accept=".pdf,.docx"
-                  style={{ display: 'none' }}
-                  onChange={(e) => {
-                    setAddFiles(prev => [...prev, ...Array.from(e.target.files)]);
-                    e.target.value = '';
-                  }}
-                />
-
-                <hr className="add-modal-divider" />
-
-                <p className="add-url-label">Or paste a URL</p>
-                <input
-                  type="text"
-                  className="add-modal-url-input"
-                  placeholder="https://..."
-                  value={addUrlInput}
-                  onChange={e => setAddUrlInput(e.target.value)}
-                />
-
-                <button
-                  className="add-modal-confirm"
-                  disabled={addFiles.length === 0 && !addUrlInput.trim() || addingToDoc}
-                  onClick={async () => {
-                    setAddingToDoc(true);
-                    try {
-                      for (const file of addFiles) {
-                        const { markdown: newMd, originalTokens, convertedTokens } = await convertFile(file);
-                        handleAppend(newMd, originalTokens, convertedTokens, file.name);
-                      }
-                      if (addUrlInput.trim()) {
-                        const { markdown: newMd, originalTokenEstimate, convertedTokenEstimate } = await urlToMarkdown(addUrlInput.trim());
-                        handleAppend(newMd, originalTokenEstimate, convertedTokenEstimate, addUrlInput.trim());
-                      }
-                      setAddFiles([]);
-                      setAddUrlInput('');
-                      setShowAddOverlay(false);
-                    } catch (err) {
-                      console.error(err);
-                    } finally {
-                      setAddingToDoc(false);
-                    }
-                  }}
-                >
-                  {addingToDoc
-                    ? <><i className="ti ti-loader-2" aria-hidden="true" style={{ fontSize: '15px', marginRight: '6px', verticalAlign: '-2px' }} />Adding...</>
-                    : 'Add to document'
-                  }
-                </button>
-              </div>
-            </div>
-          )}
           <p className="left-panel-footer">
             Powered by{' '}
             <a href="https://github.com/mwilliamson/mammoth.js" target="_blank" rel="noreferrer">
@@ -498,6 +418,88 @@ export default function App() {
           />
         </main>
       </div>
+      {showAddOverlay && (
+        <div
+          className="add-modal-scrim"
+          onClick={(e) => { if (e.target === e.currentTarget) setShowAddOverlay(false); }}
+        >
+          <div className="add-modal-card">
+            <button className="add-modal-close" onClick={() => { setShowAddOverlay(false); setAddUrlInput(''); setAddFiles([]); }}>×</button>
+            <p className="add-modal-heading">Keep building your document</p>
+
+            <button className="add-choose-files-btn" onClick={() => document.getElementById('add-file-input').click()}>
+              <i className="ti ti-upload" aria-hidden="true" style={{ fontSize: '16px' }} />
+              Choose files
+            </button>
+
+            {addFiles.length > 0 && (
+              <div className="add-file-chips">
+                {addFiles.map((f, i) => (
+                  <span key={i} className="add-chip">
+                    <i className="ti ti-file" aria-hidden="true" style={{ fontSize: '12px' }} />
+                    {f.name}
+                    <span className="add-chip-x" onClick={() => setAddFiles(prev => prev.filter((_, j) => j !== i))}>×</span>
+                  </span>
+                ))}
+              </div>
+            )}
+
+            <input
+              id="add-file-input"
+              type="file"
+              multiple
+              accept=".pdf,.docx"
+              style={{ display: 'none' }}
+              onChange={(e) => {
+                setAddFiles(prev => [...prev, ...Array.from(e.target.files)]);
+                e.target.value = '';
+              }}
+            />
+
+            <hr className="add-modal-divider" />
+
+            <p className="add-url-label">Or paste a URL</p>
+            <input
+              type="text"
+              className="add-modal-url-input"
+              placeholder="https://..."
+              value={addUrlInput}
+              onChange={e => setAddUrlInput(e.target.value)}
+            />
+
+            <button
+              className="add-modal-confirm"
+              disabled={addFiles.length === 0 && !addUrlInput.trim() || addingToDoc}
+              onClick={async () => {
+                setAddingToDoc(true);
+                try {
+                  for (const file of addFiles) {
+                    const { markdown: newMd, originalTokens, convertedTokens } = await convertFile(file);
+                    handleAppend(newMd, originalTokens, convertedTokens, file.name);
+                  }
+                  if (addUrlInput.trim()) {
+                    const { markdown: newMd, originalTokenEstimate, convertedTokenEstimate } = await urlToMarkdown(addUrlInput.trim());
+                    handleAppend(newMd, originalTokenEstimate, convertedTokenEstimate, addUrlInput.trim());
+                  }
+                  setAddFiles([]);
+                  setAddUrlInput('');
+                  setShowAddOverlay(false);
+                } catch (err) {
+                  console.error(err);
+                } finally {
+                  setAddingToDoc(false);
+                }
+              }}
+            >
+              {addingToDoc
+                ? <><i className="ti ti-loader-2" aria-hidden="true" style={{ fontSize: '15px', marginRight: '6px', verticalAlign: '-2px' }} />Adding...</>
+                : 'Add to document'
+              }
+            </button>
+          </div>
+        </div>
+      )}
+      </>
     )
   }
 
