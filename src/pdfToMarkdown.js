@@ -7,7 +7,8 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl
 const SCANNED_CHARS_PER_PAGE = 30
 
 export async function pdfToMarkdown(arrayBuffer) {
-  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
+  const safeBuffer = arrayBuffer.slice(0)
+  const pdf = await pdfjsLib.getDocument({ data: safeBuffer }).promise
   const numPages = pdf.numPages
 
   const pageBlocks = []
