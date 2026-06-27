@@ -16,6 +16,8 @@ async function getWorker() {
     const response = await fetch(absoluteWorkerUrl);
     if (!response.ok) throw new Error('HTTP ' + response.status);
     workerText = await response.text();
+    // Replace import.meta.url with the actual URL so blob worker context resolves correctly
+    workerText = workerText.replace(/import\.meta\.url/g, JSON.stringify(absoluteWorkerUrl));
   } catch (err) {
     throw new Error('Could not load PDF worker: ' + err.message);
   }
