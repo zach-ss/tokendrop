@@ -13,19 +13,29 @@ function getWorkerPort() {
     // Wrap in a classic blob worker that dynamically imports the ESM worker.
     // This avoids spawning a module worker ({ type: 'module' }) which hangs
     // silently on Safari due to a WebKit bug with ESM worker message channels.
-    const blob = new Blob(
-      [`importScripts` + `(); self.onmessage=null; import("${absoluteWorkerUrl}");`],
-      { type: 'text/javascript' }
-    );
-
-    // Use the simpler dynamic-import blob approach pdfjs itself uses internally
     const wrapperBlob = new Blob(
-      [`(async()=>{ await import("${absoluteWorkerUrl}"); })();`],
+      [
+        `self.onerror = (e) => { self.postMessage({ __pdfjsError: e.message || String(e) }); };` +
+        `(async () => {` +
+        `  try {` +
+        `    await import("${absoluteWorkerUrl}");` +
+        `  } catch (err) {` +
+        `    self.postMessage({ __pdfjsError: err.message || String(err) });` +
+        `  }` +
+        `})();`
+      ],
       { type: 'text/javascript' }
     );
     const blobUrl = URL.createObjectURL(wrapperBlob);
-
     const worker = new Worker(blobUrl);
+
+    // Listen for error signals from the worker before returning it
+    worker.addEventListener('message', (e) => {
+      if (e.data?.__pdfjsError) {
+        console.error('[TokenDrop] PDF worker failed to initialise:', e.data.__pdfjsError);
+      }
+    });
+
     return worker;
   })();
 
@@ -42,7 +52,10 @@ export async function pdfToMarkdown(arrayBuffer) {
 
   let pdf;
   try {
-    pdf = await loadingTask.promise;
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('PDF conversion timed out. This may be a browser compatibility issue.')), 15000)
+    );
+    pdf = await Promise.race([loadingTask.promise, timeoutPromise]);
   } catch (err) {
     throw new Error('Could not read this PDF. It may be scanned, encrypted, or corrupted.');
   }
