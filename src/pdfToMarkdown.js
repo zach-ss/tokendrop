@@ -19,6 +19,7 @@ function getWorkerPort() {
         `(async () => {` +
         `  try {` +
         `    await import("${absoluteWorkerUrl}");` +
+        `    self.postMessage({ __pdfjsReady: true });` +
         `  } catch (err) {` +
         `    self.postMessage({ __pdfjsError: err.message || String(err) });` +
         `  }` +
@@ -29,11 +30,23 @@ function getWorkerPort() {
     const blobUrl = URL.createObjectURL(wrapperBlob);
     const worker = new Worker(blobUrl);
 
-    // Listen for error signals from the worker before returning it
-    worker.addEventListener('message', (e) => {
-      if (e.data?.__pdfjsError) {
-        console.error('[TokenDrop] PDF worker failed to initialise:', e.data.__pdfjsError);
-      }
+    await new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        reject(new Error('PDF worker timed out during initialisation.'));
+      }, 10000);
+
+      worker.addEventListener('message', function handler(e) {
+        if (e.data?.__pdfjsReady) {
+          clearTimeout(timeout);
+          worker.removeEventListener('message', handler);
+          resolve();
+        } else if (e.data?.__pdfjsError) {
+          clearTimeout(timeout);
+          worker.removeEventListener('message', handler);
+          console.error('[TokenDrop] PDF worker failed to initialise:', e.data.__pdfjsError);
+          reject(new Error('PDF worker failed to initialise: ' + e.data.__pdfjsError));
+        }
+      });
     });
 
     return worker;
