@@ -1,90 +1,82 @@
-import * as pdfjsLib from 'pdfjs-dist'
-import workerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
+import * as pdfjsLib from 'pdfjs-dist';
+import workerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl
+let workerPortReady = null;
 
-// Chars extracted below this threshold per page → treat as scanned
-const SCANNED_CHARS_PER_PAGE = 30
+function getWorkerPort() {
+  if (workerPortReady) return workerPortReady;
+
+  workerPortReady = (async () => {
+    // Build an absolute URL for the worker asset
+    const absoluteWorkerUrl = new URL(workerUrl, window.location.href).toString();
+
+    // Wrap in a classic blob worker that dynamically imports the ESM worker.
+    // This avoids spawning a module worker ({ type: 'module' }) which hangs
+    // silently on Safari due to a WebKit bug with ESM worker message channels.
+    const blob = new Blob(
+      [`importScripts` + `(); self.onmessage=null; import("${absoluteWorkerUrl}");`],
+      { type: 'text/javascript' }
+    );
+
+    // Use the simpler dynamic-import blob approach pdfjs itself uses internally
+    const wrapperBlob = new Blob(
+      [`(async()=>{ await import("${absoluteWorkerUrl}"); })();`],
+      { type: 'text/javascript' }
+    );
+    const blobUrl = URL.createObjectURL(wrapperBlob);
+
+    const worker = new Worker(blobUrl);
+    return worker;
+  })();
+
+  return workerPortReady;
+}
 
 export async function pdfToMarkdown(arrayBuffer) {
-  const safeBuffer = arrayBuffer.slice(0)
-  const pdf = await pdfjsLib.getDocument({ data: safeBuffer }).promise
-  const numPages = pdf.numPages
+  const worker = await getWorkerPort();
 
-  const pageBlocks = []
-  let totalChars = 0
+  // Assign to workerPort (not workerSrc) so pdfjs uses our manually-constructed worker
+  pdfjsLib.GlobalWorkerOptions.workerPort = worker;
+
+  const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer.slice(0) });
+
+  let pdf;
+  try {
+    pdf = await loadingTask.promise;
+  } catch (err) {
+    throw new Error('Could not read this PDF. It may be scanned, encrypted, or corrupted.');
+  }
+
+  const numPages = pdf.numPages;
+  const pageTexts = [];
 
   for (let i = 1; i <= numPages; i++) {
-    const page = await pdf.getPage(i)
-    const content = await page.getTextContent()
-    totalChars += content.items.reduce((n, item) => n + (item.str || '').length, 0)
-    pageBlocks.push(extractPageBlocks(content.items, page))
-  }
+    const page = await pdf.getPage(i);
+    const textContent = await page.getTextContent();
 
-  const avgCharsPerPage = totalChars / numPages
-  if (avgCharsPerPage < SCANNED_CHARS_PER_PAGE) {
-    return { markdown: '', scanned: true }
-  }
+    const lines = [];
+    let lastY = null;
 
-  const rawText = pageBlocks.flat().map((b) => b.text).join(' ')
-  const markdown = pageBlocks.map(renderBlocks).join('\n\n---\n\n').trim()
-  return { markdown, rawText, scanned: false }
-}
+    for (const item of textContent.items) {
+      if (!item.str) continue;
+      const y = item.transform ? item.transform[5] : null;
 
-function extractPageBlocks(items, _page) {
-  if (!items.length) return []
+      if (lastY !== null && y !== null && Math.abs(y - lastY) > 5) {
+        lines.push('\n');
+      }
 
-  // Group items into lines by their Y coordinate (within 2pt tolerance)
-  const lines = []
-  for (const item of items) {
-    if (!item.str) continue
-    const y = Math.round(item.transform[5])
-    const existing = lines.find((l) => Math.abs(l.y - y) <= 2)
-    if (existing) {
-      existing.items.push(item)
-    } else {
-      lines.push({ y, items: [item] })
+      lines.push(item.str);
+      lastY = y;
     }
+
+    pageTexts.push(lines.join(' ').replace(/ +\n/g, '\n').replace(/\n +/g, '\n'));
   }
 
-  // Sort lines top-to-bottom (PDF Y axis is bottom-up)
-  lines.sort((a, b) => b.y - a.y)
+  const fullText = pageTexts.join('\n\n---\n\n');
 
-  // Collect font sizes to determine heading thresholds
-  const sizes = lines.flatMap((l) => l.items.map((it) => it.height || 0)).filter(Boolean)
-  const bodySize = sizes.length ? median(sizes) : 12
-
-  return lines.map((line) => {
-    const text = line.items.map((it) => it.str).join('').trim()
-    if (!text) return null
-    const size = Math.max(...line.items.map((it) => it.height || 0))
-    const isBold = line.items.some((it) => /bold/i.test(it.fontName || ''))
-
-    let type = 'p'
-    if (size >= bodySize * 1.6 || (size >= bodySize * 1.3 && isBold)) type = 'h1'
-    else if (size >= bodySize * 1.25 || (size >= bodySize * 1.1 && isBold)) type = 'h2'
-    else if (isBold && size >= bodySize) type = 'h3'
-
-    const isBullet = /^[•‣◦⁃∙\-*]\s/.test(text)
-
-    return { type: isBullet ? 'li' : type, text: isBullet ? text.replace(/^.\s+/, '') : text }
-  }).filter(Boolean)
-}
-
-function renderBlocks(blocks) {
-  const out = []
-  for (const block of blocks) {
-    if (block.type === 'h1') out.push(`# ${block.text}`)
-    else if (block.type === 'h2') out.push(`## ${block.text}`)
-    else if (block.type === 'h3') out.push(`### ${block.text}`)
-    else if (block.type === 'li') out.push(`- ${block.text}`)
-    else out.push(block.text)
-  }
-  return out.join('\n')
-}
-
-function median(arr) {
-  const sorted = [...arr].sort((a, b) => a - b)
-  const mid = Math.floor(sorted.length / 2)
-  return sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2
+  return {
+    markdown: fullText,
+    rawText: fullText,
+    scanned: false,
+  };
 }
