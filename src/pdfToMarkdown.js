@@ -56,7 +56,13 @@ export async function pdfToMarkdown(arrayBuffer) {
   const worker = await getWorker();
   pdfjsLib.GlobalWorkerOptions.workerPort = worker;
 
-  const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer.slice(0) });
+  const loadingTask = pdfjsLib.getDocument({
+    data: arrayBuffer.slice(0),
+    standardFontDataUrl: new URL(
+      'pdfjs-dist/standard_fonts/',
+      import.meta.url
+    ).toString(),
+  });
 
   let pdf;
   try {
