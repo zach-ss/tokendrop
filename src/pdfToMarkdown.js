@@ -11,12 +11,14 @@ async function getWorkerBlobUrl() {
   const response = await fetch(absoluteWorkerUrl);
   if (!response.ok) throw new Error('Failed to fetch PDF worker: HTTP ' + response.status);
   let workerText = await response.text();
+  console.log('[TokenDrop] worker tail:', workerText.slice(-200));
 
   // Replace import.meta.url so internal URL resolution works from blob context
   workerText = workerText.replace(/import\.meta\.url/g, JSON.stringify(absoluteWorkerUrl));
 
   // Strip sourcemap comment to prevent Safari access control errors
   workerText = workerText.replace(/\/\/# sourceMappingURL=\S+/g, '');
+  console.log('[TokenDrop] sourcemap stripped:', !workerText.includes('sourceMappingURL'));
 
   const blob = new Blob([workerText], { type: 'text/javascript' });
   workerBlobUrl = URL.createObjectURL(blob);
