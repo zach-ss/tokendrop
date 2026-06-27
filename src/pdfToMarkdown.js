@@ -1,4 +1,3 @@
-import './promisePolyfill.js';
 import * as pdfjsLib from 'pdfjs-dist';
 import workerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 
@@ -14,8 +13,17 @@ function getWorkerPort() {
     // Wrap in a classic blob worker that dynamically imports the ESM worker.
     // This avoids spawning a module worker ({ type: 'module' }) which hangs
     // silently on Safari due to a WebKit bug with ESM worker message channels.
+    const promiseTryPolyfill = `
+      if (typeof Promise.try !== 'function') {
+        Promise.try = function(fn) {
+          return new Promise(function(resolve) { resolve(fn()); });
+        };
+      }
+    `;
+
     const wrapperBlob = new Blob(
       [
+        promiseTryPolyfill +
         `self.onerror = (e) => { self.postMessage({ __pdfjsError: e.message || String(e) }); };` +
         `(async () => {` +
         `  try {` +
