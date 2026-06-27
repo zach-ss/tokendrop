@@ -9,8 +9,8 @@ export default defineConfig({
     {
       name: 'copy-pdfjs-worker',
       buildStart() {
-        const src = resolve('node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs');
-        const dest = resolve('public/pdf.worker.mjs');
+        const src = resolve('node_modules/pdfjs-dist/legacy/build/pdf.worker.min.mjs');
+        const dest = resolve('public/pdf.worker.min.mjs');
         copyFileSync(src, dest);
 
         const fontsDir = resolve('node_modules/pdfjs-dist/standard_fonts');

@@ -9,7 +9,7 @@ if (typeof Promise.try !== 'function') {
 
 // Worker is served as a plain static file from /pdf.worker.mjs
 // This avoids all Safari ESM blob worker issues entirely
-pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.mjs';
+pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
 
 export async function pdfToMarkdown(arrayBuffer) {
   const loadingTask = pdfjsLib.getDocument({
