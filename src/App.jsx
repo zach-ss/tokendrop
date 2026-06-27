@@ -129,6 +129,10 @@ function convertFile(file) {
     const reader = new FileReader()
     reader.onload = (e) => {
       const arrayBuffer = e.target.result
+      if (arrayBuffer.byteLength === 0) {
+        reject(new Error('File could not be read. If using iCloud, open the file in Files app first to download it, then try again.'))
+        return
+      }
       if (type === 'docx') {
         mammoth.convertToMarkdown({ arrayBuffer })
           .then((result) => {
