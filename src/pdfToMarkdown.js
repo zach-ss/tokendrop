@@ -20,19 +20,26 @@ async function getWorker() {
     throw new Error('Could not load PDF worker: ' + err.message);
   }
 
-  // Prepend Promise.try polyfill since the worker scope is isolated from main thread
-  const polyfill = `
-    if (typeof Promise.try !== 'function') {
-      Promise.try = function(fn) {
-        return new Promise(function(resolve) { resolve(fn()); });
-      };
-    }
-  `;
-
-  const blob = new Blob([polyfill + workerText], { type: 'text/javascript' });
+  const blob = new Blob([workerText], { type: 'text/javascript' });
   const blobUrl = URL.createObjectURL(blob);
-  const worker = new Worker(blobUrl);
+  const worker = new Worker(blobUrl, { type: 'module' });
   URL.revokeObjectURL(blobUrl);
+
+  await new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      reject(new Error('PDF worker timed out during initialisation.'));
+    }, 10000);
+    worker.addEventListener('message', function handler(e) {
+      clearTimeout(timeout);
+      worker.removeEventListener('message', handler);
+      resolve();
+    });
+    worker.addEventListener('error', function errHandler(e) {
+      clearTimeout(timeout);
+      worker.removeEventListener('error', errHandler);
+      reject(new Error('PDF worker error: ' + e.message));
+    });
+  });
 
   workerInstance = worker;
   return worker;
