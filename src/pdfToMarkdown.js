@@ -1,41 +1,20 @@
 import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs';
-import workerUrl from 'pdfjs-dist/legacy/build/pdf.worker.mjs?url';
 
-let workerBlobUrl = null;
-
-async function getWorkerBlobUrl() {
-  if (workerBlobUrl) return workerBlobUrl;
-
-  const absoluteWorkerUrl = new URL(workerUrl, window.location.href).toString();
-
-  const response = await fetch(absoluteWorkerUrl);
-  if (!response.ok) throw new Error('Failed to fetch PDF worker: HTTP ' + response.status);
-  let workerText = await response.text();
-
-  // Replace import.meta.url so internal URL resolution works from blob context
-  workerText = workerText.replace(/import\.meta\.url/g, JSON.stringify(absoluteWorkerUrl));
-
-  // Strip sourcemap comment to prevent Safari access control errors
-  workerText = workerText.replace(/\/\/# sourceMappingURL=\S+/g, '');
-
-  // Strip ESM export so classic worker doesn't reject the script
-  workerText = workerText.replace(/\nexport\s*\{[^}]*\}\s*;?\s*$/, '');
-
-  const blob = new Blob([workerText], { type: 'text/javascript' });
-  workerBlobUrl = URL.createObjectURL(blob);
-  return workerBlobUrl;
+// Polyfill Promise.try for Safari 17.x (runs on main thread)
+if (typeof Promise.try !== 'function') {
+  Promise.try = function (fn) {
+    return new Promise(function (resolve) { resolve(fn()); });
+  };
 }
 
-export async function pdfToMarkdown(arrayBuffer) {
-  const blobUrl = await getWorkerBlobUrl();
-  pdfjsLib.GlobalWorkerOptions.workerSrc = blobUrl;
+// Worker is served as a plain static file from /pdf.worker.mjs
+// This avoids all Safari ESM blob worker issues entirely
+pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.mjs';
 
+export async function pdfToMarkdown(arrayBuffer) {
   const loadingTask = pdfjsLib.getDocument({
     data: arrayBuffer.slice(0),
-    standardFontDataUrl: new URL(
-      'pdfjs-dist/standard_fonts/',
-      import.meta.url
-    ).toString(),
+    standardFontDataUrl: '/standard_fonts/',
   });
 
   let pdf;
