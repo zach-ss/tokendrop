@@ -4,6 +4,7 @@ import workerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 let workerPortReady = null;
 
 function getWorkerPort() {
+  console.log('[TD] getWorkerPort called, cached:', !!workerPortReady);
   if (workerPortReady) return workerPortReady;
 
   workerPortReady = (async () => {
@@ -29,6 +30,7 @@ function getWorkerPort() {
     );
     const blobUrl = URL.createObjectURL(wrapperBlob);
     const worker = new Worker(blobUrl);
+    console.log('[TD] worker constructed, waiting for ready signal...');
 
     await new Promise((resolve, reject) => {
       const timeout = setTimeout(() => {
@@ -36,7 +38,9 @@ function getWorkerPort() {
       }, 10000);
 
       worker.addEventListener('message', function handler(e) {
+        console.log('[TD] message from worker:', e.data);
         if (e.data?.__pdfjsReady) {
+          console.log('[TD] worker ready signal received');
           clearTimeout(timeout);
           worker.removeEventListener('message', handler);
           resolve();
@@ -49,6 +53,7 @@ function getWorkerPort() {
       });
     });
 
+    console.log('[TD] returning ready worker to pdfjs');
     return worker;
   })();
 
@@ -60,8 +65,10 @@ export async function pdfToMarkdown(arrayBuffer) {
 
   // Assign to workerPort (not workerSrc) so pdfjs uses our manually-constructed worker
   pdfjsLib.GlobalWorkerOptions.workerPort = worker;
+  console.log('[TD] workerPort assigned, calling getDocument...');
 
   const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer.slice(0) });
+  console.log('[TD] loadingTask created, awaiting promise...');
 
   let pdf;
   try {
@@ -70,6 +77,7 @@ export async function pdfToMarkdown(arrayBuffer) {
     );
     pdf = await Promise.race([loadingTask.promise, timeoutPromise]);
   } catch (err) {
+    console.log('[TD] getDocument threw:', err);
     throw new Error('Could not read this PDF. It may be scanned, encrypted, or corrupted.');
   }
 
