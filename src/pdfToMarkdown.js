@@ -1,6 +1,7 @@
 import * as pdfjsLib from 'pdfjs-dist'
+import workerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = ''
+pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl
 
 // Chars extracted below this threshold per page → treat as scanned
 const SCANNED_CHARS_PER_PAGE = 30
