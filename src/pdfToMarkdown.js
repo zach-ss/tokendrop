@@ -1,55 +1,31 @@
 import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs';
 import workerUrl from 'pdfjs-dist/legacy/build/pdf.worker.mjs?url';
 
-let workerInstance = null;
+let workerBlobUrl = null;
 
-async function getWorker() {
-  if (workerInstance) return workerInstance;
+async function getWorkerBlobUrl() {
+  if (workerBlobUrl) return workerBlobUrl;
 
   const absoluteWorkerUrl = new URL(workerUrl, window.location.href).toString();
 
-  // Fetch the worker script text on the main thread where fetch() works reliably,
-  // then inline it into a blob so the worker never needs to call import().
-  // This sidesteps Safari 17.6's silent killing of dynamic import() in blob workers.
-  let workerText;
-  try {
-    const response = await fetch(absoluteWorkerUrl);
-    if (!response.ok) throw new Error('HTTP ' + response.status);
-    workerText = await response.text();
-    // Replace import.meta.url with the actual URL so blob worker context resolves correctly
-    workerText = workerText.replace(/import\.meta\.url/g, JSON.stringify(absoluteWorkerUrl));
-  } catch (err) {
-    throw new Error('Could not load PDF worker: ' + err.message);
-  }
+  const response = await fetch(absoluteWorkerUrl);
+  if (!response.ok) throw new Error('Failed to fetch PDF worker: HTTP ' + response.status);
+  let workerText = await response.text();
+
+  // Replace import.meta.url so internal URL resolution works from blob context
+  workerText = workerText.replace(/import\.meta\.url/g, JSON.stringify(absoluteWorkerUrl));
+
+  // Strip sourcemap comment to prevent Safari access control errors
+  workerText = workerText.replace(/\/\/# sourceMappingURL=\S+/g, '');
 
   const blob = new Blob([workerText], { type: 'text/javascript' });
-  const blobUrl = URL.createObjectURL(blob);
-  const worker = new Worker(blobUrl, { type: 'module' });
-  URL.revokeObjectURL(blobUrl);
-
-  await new Promise((resolve, reject) => {
-    const timeout = setTimeout(() => {
-      reject(new Error('PDF worker timed out during initialisation.'));
-    }, 10000);
-    worker.addEventListener('message', function handler(e) {
-      clearTimeout(timeout);
-      worker.removeEventListener('message', handler);
-      resolve();
-    });
-    worker.addEventListener('error', function errHandler(e) {
-      clearTimeout(timeout);
-      worker.removeEventListener('error', errHandler);
-      reject(new Error('PDF worker error: ' + e.message));
-    });
-  });
-
-  workerInstance = worker;
-  return worker;
+  workerBlobUrl = URL.createObjectURL(blob);
+  return workerBlobUrl;
 }
 
 export async function pdfToMarkdown(arrayBuffer) {
-  const worker = await getWorker();
-  pdfjsLib.GlobalWorkerOptions.workerPort = worker;
+  const blobUrl = await getWorkerBlobUrl();
+  pdfjsLib.GlobalWorkerOptions.workerSrc = blobUrl;
 
   const loadingTask = pdfjsLib.getDocument({
     data: arrayBuffer.slice(0),
@@ -62,10 +38,7 @@ export async function pdfToMarkdown(arrayBuffer) {
   let pdf;
   try {
     const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(
-        () => reject(new Error('PDF conversion timed out.')),
-        15000
-      )
+      setTimeout(() => reject(new Error('PDF conversion timed out.')), 15000)
     );
     pdf = await Promise.race([loadingTask.promise, timeoutPromise]);
   } catch (err) {
