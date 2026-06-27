@@ -8,45 +8,31 @@ async function getWorker() {
 
   const absoluteWorkerUrl = new URL(workerUrl, window.location.href).toString();
 
-  // Safari 17.x silently kills ESM module workers spawned via workerSrc.
-  // Instead we spawn a classic blob worker that dynamically imports the
-  // legacy worker (which has all polyfills including Promise.try baked in).
-  // Classic workers can use dynamic import() in Safari 15+ without issue.
-  const blob = new Blob(
-    [
-      `(async () => {
-        try {
-          await import("${absoluteWorkerUrl}");
-          self.postMessage({ __pdfjsReady: true });
-        } catch (err) {
-          self.postMessage({ __pdfjsError: String(err) });
-        }
-      })();`
-    ],
-    { type: 'text/javascript' }
-  );
+  // Fetch the worker script text on the main thread where fetch() works reliably,
+  // then inline it into a blob so the worker never needs to call import().
+  // This sidesteps Safari 17.6's silent killing of dynamic import() in blob workers.
+  let workerText;
+  try {
+    const response = await fetch(absoluteWorkerUrl);
+    if (!response.ok) throw new Error('HTTP ' + response.status);
+    workerText = await response.text();
+  } catch (err) {
+    throw new Error('Could not load PDF worker: ' + err.message);
+  }
 
+  // Prepend Promise.try polyfill since the worker scope is isolated from main thread
+  const polyfill = `
+    if (typeof Promise.try !== 'function') {
+      Promise.try = function(fn) {
+        return new Promise(function(resolve) { resolve(fn()); });
+      };
+    }
+  `;
+
+  const blob = new Blob([polyfill + workerText], { type: 'text/javascript' });
   const blobUrl = URL.createObjectURL(blob);
   const worker = new Worker(blobUrl);
   URL.revokeObjectURL(blobUrl);
-
-  await new Promise((resolve, reject) => {
-    const timeout = setTimeout(() => {
-      reject(new Error('PDF worker timed out during initialisation.'));
-    }, 10000);
-
-    worker.addEventListener('message', function handler(e) {
-      if (e.data?.__pdfjsReady) {
-        clearTimeout(timeout);
-        worker.removeEventListener('message', handler);
-        resolve();
-      } else if (e.data?.__pdfjsError) {
-        clearTimeout(timeout);
-        worker.removeEventListener('message', handler);
-        reject(new Error('PDF worker failed: ' + e.data.__pdfjsError));
-      }
-    });
-  });
 
   workerInstance = worker;
   return worker;
